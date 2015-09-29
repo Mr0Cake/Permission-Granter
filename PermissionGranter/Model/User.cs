@@ -11,7 +11,6 @@ namespace PermissionGranter.Model
         private string lastName { public get; set; }
         private string firstName { public get; set; }
         private string function { public get; set; }
-        public List<Delegate> permissions = new List<Delegate>();
         public User(string lastname, string firstname, string function)
         {
             this.lastName = lastname;
@@ -19,23 +18,5 @@ namespace PermissionGranter.Model
             this.function = function;
         }
 
-        public bool addPermission(Delegate method)
-        {
-            permissions.Add(method);
-            return true;
-        }
-
-        public bool removePermission(Delegate method)
-        {
-            if (permissions.Contains(method))
-            {
-                permissions.Remove(method);
-                return true;
-            }else{
-                return false;
-                //permission not found
-            }
-            
-        }
     }
 }

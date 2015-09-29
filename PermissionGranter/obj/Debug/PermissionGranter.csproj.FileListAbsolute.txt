@@ -1,1 +1,2 @@
 C:\Users\Cake\Dropbox\Programmeren 3\wpf\Eindwerk permissions\PermissionGranter\PermissionGranter\bin\Debug\PermissionGranter.exe.config
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\PermissionGranter.exe.config
