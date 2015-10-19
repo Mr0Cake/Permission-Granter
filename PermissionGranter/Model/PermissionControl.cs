@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PermissionGranter.Model
 {
-    public interface ControlPermissions
+    public interface PermissionControl
     {
         /* new
          * save
@@ -17,6 +17,7 @@ namespace PermissionGranter.Model
          * help
          * close*/
         public List<Permission> getFullPermissions();
+        
 
         public void permissionRead();
         public void permissionNew();

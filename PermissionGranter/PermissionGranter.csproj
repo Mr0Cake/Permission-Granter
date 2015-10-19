@@ -80,7 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\controlFactory.cs" />
-    <Compile Include="Model\ControlPermissions.cs" />
+    <Compile Include="Model\PermissionControl.cs" />
     <Compile Include="Model\PermissionGranterControl.xaml.cs">
       <DependentUpon>PermissionGranterControl.xaml</DependentUpon>
     </Compile>

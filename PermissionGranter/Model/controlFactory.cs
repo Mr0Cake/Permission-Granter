@@ -8,14 +8,9 @@ namespace PermissionGranter.Model
 {
     class ControlFactory
     {
-        public static PermissionGranterControl createPermissionControlFromUser(PermissionGranterControl control, User user)
+        public static PermissionGranterControl applyUserPermissions(User user, PermissionGranterControl control)
         {
-            foreach (Delegate d in user.permissions)
-            {
-                d.DynamicInvoke();
-            }
             
-
             return control;
         }
     }

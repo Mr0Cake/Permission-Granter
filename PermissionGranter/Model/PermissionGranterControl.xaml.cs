@@ -18,7 +18,7 @@ namespace PermissionGranter.Model
     /// <summary>
     /// Interaction logic for PermissionGranterControl.xaml
     /// </summary>
-    public partial class PermissionGranterControl : UserControl, ControlPermissions
+    public partial class PermissionGranterControl : UserControl, PermissionControl
     {
         abstract List<Delegate> fullPermissions;
         abstract List<PermissionGranterControl> children;

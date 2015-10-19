@@ -19,28 +19,10 @@ namespace PermissionGranter.View
     /// <summary>
     /// Interaction logic for PrinterControl.xaml
     /// </summary>
-    public partial class PrinterControl : PermissionGranterControl,ControlPermissions
+    public partial class PrinterControl : PermissionGranterControl,PermissionControl
     {
 
-        private bool readPermission = false;
-        private bool writePermission = false;
-        public void setReadPermission(bool permission)
-        {
-            readPermission = permission;
-        }
-        public void setWritePermission(bool permission)
-        {
-            writePermission = permission;
-        }
-
-        public void toggleReadPermission()
-        {
-            readPermission = !readPermission;
-        }
-        public void toggleWritePermission()
-        {
-            writePermission = !writePermission;
-        }
+        
 
         public Dictionary<string, Action> fullPermissions;
         public List<Permission> fullPermissionsList = new List<Permission>();
@@ -66,7 +48,8 @@ namespace PermissionGranter.View
 
         public void permissionRead()
         {
-            throw new NotImplementedException();
+        //give access to read
+            readPermission = true;
         }
 
         public void permissionNew()
