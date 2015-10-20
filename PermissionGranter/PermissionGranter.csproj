@@ -53,7 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Model\Permission.cs" />
+    <Compile Include="Model\DefaultPermissions.cs" />
     <Compile Include="View\PrinterControl.xaml.cs">
       <DependentUpon>PrinterControl.xaml</DependentUpon>
     </Compile>
@@ -80,7 +80,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\controlFactory.cs" />
-    <Compile Include="Model\PermissionControl.cs" />
     <Compile Include="Model\PermissionGranterControl.xaml.cs">
       <DependentUpon>PermissionGranterControl.xaml</DependentUpon>
     </Compile>

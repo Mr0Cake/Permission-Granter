@@ -20,13 +20,10 @@ namespace PermissionGranter.Model
             set { _UserPermissions = value; }
         }
 
-        public bool addPermission(PermissionGranterControl pgc, List<Permission> permissions){
+        public void addPermission(DefaultPermissions pgc, string[] perms){
 
-            KeyValuePair<string, string[]> kvp = new KeyValuePair<string,string[]> { pgc.GetType().ToString(), permissions.ToArray() };
-            return false;
+            UserPermissions.Add(pgc.PermissionGroupName(), perms);
         }
-        
-
 
         public User(string lastname, string firstname, string function)
         {

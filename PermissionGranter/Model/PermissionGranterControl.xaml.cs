@@ -18,14 +18,68 @@ namespace PermissionGranter.Model
     /// <summary>
     /// Interaction logic for PermissionGranterControl.xaml
     /// </summary>
-    public partial class PermissionGranterControl : UserControl, PermissionControl
+    public partial class PermissionGranterControl : UserControl, DefaultPermissions
     {
-        abstract List<Delegate> fullPermissions;
-        abstract List<PermissionGranterControl> children;
+        
 
         public PermissionGranterControl()
         {
             InitializeComponent();
+        }
+
+        public Dictionary<string, Action> getFullPermissions()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionRead()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionNew()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionSave()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionDelete()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionCancel()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionPrint()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionFind()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionHelp()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void permissionClose()
+        {
+            throw new NotImplementedException();
+        }
+
+        public string PermissionGroupName()
+        {
+            throw new NotImplementedException();
         }
     }
 }
