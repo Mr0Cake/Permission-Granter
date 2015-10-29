@@ -54,6 +54,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Model\DefaultPermissions.cs" />
+    <Compile Include="Model\ExtensionMethods.cs" />
+    <Compile Include="Model\UserGroup.cs" />
     <Compile Include="View\PrinterControl.xaml.cs">
       <DependentUpon>PrinterControl.xaml</DependentUpon>
     </Compile>
