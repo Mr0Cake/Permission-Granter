@@ -10,8 +10,8 @@ namespace PermissionGranter.Model
     /// Beschrijft een gebruiker en zijn permissies
     /// Een gebruiker kan worden toegevoegd aan meerdere groepen
     /// De permissies van de groep worden dan aangezet
-    /// Permissies kunnen worden denied, deze worden aangezet na berekening van de groep en user permissies
-    /// Dus een Deny heeft voorrang op de Allow
+    /// Permissies kunnen geweigerd worden, deze worden uitgezet na berekening van de groep en user permissies
+    /// Dus een weigering van een permissie heeft voorang op de toegang van een permissie
     /// </summary>
     public class User
     {
