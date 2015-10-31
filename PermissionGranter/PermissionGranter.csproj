@@ -53,6 +53,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\Permissions.cs" />
     <Compile Include="Model\DefaultPermissions.cs" />
     <Compile Include="Model\ExtensionMethods.cs" />
     <Compile Include="Model\UserGroup.cs" />

@@ -39,27 +39,15 @@ namespace PermissionGranter.Model
         }
 
         //userAccessPermissions
-        private Dictionary<string, HashSet<string>> _UserPermissions;
+        private Permissions _UserPermissions;
 
         /// <summary>
         /// Permissions die gezet zijn specifiek voor de gebruiker
         /// </summary>
-        public Dictionary<string, HashSet<string>> UserPermissions
+        public Permissions UserPermissions
         {
             get { return _UserPermissions; }
             set { _UserPermissions = value; }
-        }
-
-        //userDenyPermissions
-        private Dictionary<string, HashSet<string>> _UserDenyPermission;
-
-        /// <summary>
-        /// Permissions die specifiek zijn weggehaald voor de gebruiker
-        /// </summary>
-        public Dictionary<string, HashSet<string>> UserDenyPermission
-        {
-            get { return _UserDenyPermission; }
-            set { _UserDenyPermission = value; }
         }
 
         //calculatePermission
@@ -140,10 +128,6 @@ namespace PermissionGranter.Model
 
         
 
-        public void addPermission(DefaultPermissions pgc, HashSet<string> perms){
-
-            UserPermissions.Add(pgc.PermissionGroupName(), perms);
-        }
 
         public User(string lastname, string firstname, string function)
         {

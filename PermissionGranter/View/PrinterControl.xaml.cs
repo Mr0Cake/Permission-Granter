@@ -25,9 +25,9 @@ namespace PermissionGranter.View
         
 
         public Dictionary<string, Action> fullPermissions;
-        public List<Permission> fullPermissionsList = new List<Permission>();
+        public List<Permissions> fullPermissionsList = new List<Permissions>();
 
-        public List<Permission> getFullPermissions()
+        public List<Permissions> getFullPermissions()
         {
             return this.fullPermissionsList;
         }

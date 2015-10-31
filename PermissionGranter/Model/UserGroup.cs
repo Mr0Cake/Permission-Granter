@@ -6,14 +6,25 @@ using System.Threading.Tasks;
 
 namespace PermissionGranter.Model
 {
+    /// <summary>
+    /// Representeerd de permissies voor een bepaalde groep
+    /// </summary>
     public class UserGroup
     {
-        private Dictionary<string, HashSet<string>> _Permissions;
 
-        public Dictionary<string, HashSet<string>> Permissions
+        public UserGroup(Permissions perms, string name, string description)
         {
-            get { return _Permissions; }
-            set { _Permissions = value; }
+            GroupPermissions = perms;
+            GroupName = name;
+            Description = description;
+        }
+
+        private Permissions _GroupPermissions;
+
+        public Permissions GroupPermissions
+        {
+            get { return _GroupPermissions; }
+            set { _GroupPermissions = value; }
         }
 
         private string _GroupName;
