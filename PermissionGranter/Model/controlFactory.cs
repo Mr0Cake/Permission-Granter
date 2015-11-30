@@ -8,7 +8,7 @@ namespace PermissionGranter.Model
 {
     class ControlFactory
     {
-        public static void applyUserPermissions(User user, DefaultPermissions control)
+        public static void applyUserPermissions(User user, DefaultPermissionControl control)
         {
             
         }

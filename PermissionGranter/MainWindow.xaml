@@ -3,6 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition></ColumnDefinition>
+            <ColumnDefinition Width="3*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Button Name="btnCreateUsers" Click="Button_Click">CreateUsers</Button>
+            <Button Name="btnExtensionMethodsTest" Click="Button_Click">testExtensionMethods</Button>
+        </StackPanel>
+        <StackPanel Name="spContent" Grid.Column="1">
+            
+        </StackPanel>
     </Grid>
 </Window>

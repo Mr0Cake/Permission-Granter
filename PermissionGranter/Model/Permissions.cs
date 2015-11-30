@@ -12,10 +12,15 @@ namespace PermissionGranter.Model
         {
             AllowPermissions = allow;
             DenyPermissions = deny;
+            CalculatePermissions();
+        }
+
+        public Permissions()
+        {
         }
 
         //allow
-        private Dictionary<string, HashSet<string>> _AllowPermissions;
+        private Dictionary<string, HashSet<string>> _AllowPermissions = new Dictionary<string,HashSet<string>>();
 
         /// <summary>
         /// Permissions die zijn toegelaten
@@ -29,33 +34,50 @@ namespace PermissionGranter.Model
 
         //deny
 
-        private Dictionary<string, HashSet<string>> _DenyPermissions;
+        private Dictionary<string, HashSet<string>> _DenyPermissions = new Dictionary<string,HashSet<string>>();
 
         /// <summary>
         /// Permissions die verboden zijn
         /// </summary>
         public Dictionary<string, HashSet<string>> DenyPermissions
         {
-            get { return _CalculatedPermissions; }
-            set { _CalculatedPermissions = value; }
+            get { return _DenyPermissions; }
+            set { _DenyPermissions = value; }
         }
 
-        private Dictionary<string, HashSet<string>> _CalculatedPermissions;
+        private Dictionary<string, HashSet<string>> _CalculatedPermissions = new Dictionary<string,HashSet<string>>();
 
         /// <summary>
         /// Permissions die verboden zijn
         /// </summary>
         public Dictionary<string, HashSet<string>> CalculatedPermissions
         {
-            get { return _CalculatedPermissions; }
+            get 
+            {
+                CalculatePermissions();
+                return _CalculatedPermissions; 
+            }
             set { _CalculatedPermissions = value; }
         }
 
+        /// <summary>
+        /// Fills the CalculatedPermissions. 
+        /// It will remove all AllowPermissions that have been denied by DenyPermision
+        /// 
+        /// </summary>
+        public void CalculatePermissions()
+        {
+            Dictionary<string, HashSet<string>> CalcPermissions = new Dictionary<string, HashSet<string>>(_AllowPermissions);
+            _CalculatedPermissions =
+            CalcPermissions.AsEnumerable().Where(x => _DenyPermissions.ContainsKey(x.Key)).Where(x => x.Value.RemoveRange(_DenyPermissions[x.Key]) && x.Value.Count>0).ToDictionary(x => x.Key, y => y.Value);
+            //Allow permissies als enumerable, waar de key van de allow dictionary voorkomt in deny, waar x.Value=HashSet<string>.Verwijder de permissies van deny (altijd true) dus alle KeyValuePairs worden meegenomen tenzij deze leeg is geraakt, naar nieuwe dictionary
+        }
+        
 
         //calculate
         /// <summary>
-        /// CalculatePermissions will return a Dictionary of permissions that removed the deny permissions from the allowpermissions. 
-        /// 
+        /// CalculatePermissions will return a Dictionary of permissions that only contains the 
+        /// unrestricted allow Permissions.
         /// </summary>
         /// <param name="usergroup">List of groups a user is added to</param>
         /// <param name="allow">The allow permissions of a user/group</param>
@@ -103,7 +125,7 @@ namespace PermissionGranter.Model
         /// <param name="key"></param>
         /// <param name="value">List of items you want to remove</param>
         /// <returns></returns>
-        private static HashSet<string> deletePermissions(HashSet<string> removefrom, string key, HashSet<string> value)
+        public static HashSet<string> deletePermissions(HashSet<string> removefrom, string key, HashSet<string> value)
         {
 
             foreach (string s in value)
@@ -121,7 +143,7 @@ namespace PermissionGranter.Model
         /// </summary>
         /// <param name="toAdd">List that will be added to </param>
         /// <param name="values">List that will be added from</param>
-        private static void addPermissions(Dictionary<string, HashSet<string>> toAdd, Dictionary<string, HashSet<string>> values)
+        public static void addPermissions(Dictionary<string, HashSet<string>> toAdd, Dictionary<string, HashSet<string>> values)
         {
             foreach (KeyValuePair<string, HashSet<string>> kvp in values)
             {
@@ -132,7 +154,27 @@ namespace PermissionGranter.Model
             }
         }
 
-
-
+        /// <summary>
+        /// Combine 2 or more permission objects
+        /// </summary>
+        /// <param name="combinePermission">List that will be combined </param>
+        public static Permissions combinePermissions(params Permissions[] combinePermissions)
+        {
+            if (combinePermissions != null && combinePermissions.Count() > 1)
+            {
+                Permissions basePerm = combinePermissions[0];
+                for (int i = 1; i <= combinePermissions.Count(); i++)
+                {
+                    Permissions.addPermissions(basePerm._AllowPermissions, combinePermissions[i]._AllowPermissions);
+                    Permissions.addPermissions(basePerm._DenyPermissions, combinePermissions[i]._DenyPermissions);
+                }
+                basePerm.CalculatePermissions();
+                return basePerm;
+            }
+            else
+            {
+                throw new Exception("Could not combine permissions, no or only 1 parameters were given");
+            }
+        }
     }
 }

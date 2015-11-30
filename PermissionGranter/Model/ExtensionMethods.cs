@@ -56,5 +56,29 @@ namespace PermissionGranter.Model
 
             return true;
         }
+
+        /// <summary>
+        /// Remove a range from HashSet
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="baseSet">HashSet base</param>
+        /// <param name="removeSet">HashSet that will be added</param>
+        /// <returns>false on failure, true on success</returns>
+        public static bool RemoveRange<T>(this HashSet<T> baseSet, HashSet<T> removeSet)
+        {
+            if (baseSet == null)
+                throw new ArgumentNullException("baseSet null");
+            if (removeSet == null)
+                throw new ArgumentNullException("addSet null");
+            HashSet<T> tempSet = new HashSet<T>();
+            //tempSet = baseSet;
+            foreach (T arg in removeSet)
+            {
+                if(baseSet.Contains(arg))
+                baseSet.Remove(arg);
+            }
+
+            return true;
+        }
     }
 }

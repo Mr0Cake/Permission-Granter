@@ -24,5 +24,22 @@ namespace PermissionGranter
         {
             InitializeComponent();
         }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            string st = "PermissionGranter." + ((Button)sender).Name.Replace("btn", "");
+            Type type = Type.GetType(st);
+            openUserControl((UserControl)Activator.CreateInstance(type));
+        }
+
+        public void openUserControl(UserControl userControl)
+        {
+            if (spContent.Children.Count > 0)
+            {
+                spContent.Children.RemoveRange(0, spContent.Children.Count);
+            }
+
+            spContent.Children.Add(userControl);
+        }
     }
 }

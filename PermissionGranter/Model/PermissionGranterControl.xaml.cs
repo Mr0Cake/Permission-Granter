@@ -18,9 +18,20 @@ namespace PermissionGranter.Model
     /// <summary>
     /// Interaction logic for PermissionGranterControl.xaml
     /// </summary>
-    public partial class PermissionGranterControl : UserControl, DefaultPermissions
+    public partial class PermissionGranterControl : UserControl, DefaultPermissionControl
     {
-        
+        public string MenuName
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public PermissionGranterControl()
         {
@@ -78,6 +89,11 @@ namespace PermissionGranter.Model
         }
 
         public string PermissionGroupName()
+        {
+            throw new NotImplementedException();
+        }
+
+        public List<DefaultPermissionControl> Children()
         {
             throw new NotImplementedException();
         }

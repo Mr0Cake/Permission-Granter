@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="PermissionGranter.CheckedListBoxItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PermissionGranter"
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="300">
+    <Grid>
+        <CheckBox Margin="0,3,0,0">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Margin="0,0,10,0">Item</TextBlock>
+                <CheckBox Margin="0,1,0,0"></CheckBox>
+                <CheckBox Margin="0,1,0,0"></CheckBox>
+                <CheckBox Margin="0,1,0,0"></CheckBox>
+            </StackPanel>
+        </CheckBox>
+    </Grid>
+</UserControl>

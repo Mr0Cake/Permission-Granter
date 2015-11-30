@@ -1,0 +1,58 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PermissionGranter" x:Class="PermissionGranter.CreateUsers"
+            xmlns:self="clr-namespace:PermissionGranter.Model"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Grid.Column="0" Grid.Row="0">
+            <Label Content="Firstname"/>
+            <TextBox x:Name="txtFirstName"/>
+            <Label Content="Lastname"/>
+            <TextBox x:Name="txtLasttName"/>
+            <Label Content="Function"/>
+            <TextBox x:Name="txtFunction"/>
+            <Button x:Name="btnCreate" Click="btnCreate_Click" Content="Create"/>
+        </StackPanel>
+        <StackPanel x:Name="spButtons" Grid.Column="1" Grid.Row="0" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
+        <TreeView Name="trvUser" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding MenuItems}">
+            <TreeView.Resources>
+                <HierarchicalDataTemplate DataType="{x:Type self:CustTreeItems}" ItemsSource="{Binding Items}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" ></CheckBox>
+                        <TextBlock Text="{Binding Path=Name}" />
+                        <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Options}" >
+                            <ListBox.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <StackPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ListBox.ItemsPanel>
+                            <ListBox.ItemTemplate  >
+                                <DataTemplate  DataType="{x:Type self:Permission}" >
+                                    <CheckBox Style="{StaticResource SimpleCheckBox}" IsThreeState="True" ToolTip="{Binding Name}" IsChecked="{Binding Value, Mode=TwoWay}" Margin="0" Template="{DynamicResource CheckBoxTemplate}"></CheckBox>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+                
+            </TreeView.Resources>
+        </TreeView>
+        <StackPanel Grid.Row="1" Grid.Column="1" >
+            <ListBox x:Name="lstUsers"  SelectionChanged="lstUsers_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+            <TextBlock Name="txtOutput"></TextBlock>
+        </StackPanel>
+    </Grid>
+
+</UserControl>
