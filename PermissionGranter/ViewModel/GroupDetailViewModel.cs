@@ -183,7 +183,7 @@ namespace PermissionGranter.ViewModel
             if(CompleteMenu.Items.FindFirst(x => x.Changed))
             {
                 PermissionsTreeViewAdapter.FillPermissions(SelectedGroup, CompleteMenu);
-                
+                dbActions.UpdatePermissions(SelectedGroup);
             }
             if (AllGroups.FindFirst(x => x.Changed))
             {
@@ -262,7 +262,11 @@ namespace PermissionGranter.ViewModel
                 {
                     //deze had ik graag in een task gestopt
                     waitfortask = Task.Factory.StartNew(() =>
-                    PermissionsTreeViewAdapter.FillPermissions(SelectedGroup, CompleteMenu));
+                    {
+                        PermissionsTreeViewAdapter.FillPermissions(SelectedGroup, CompleteMenu);
+                        dbActions.UpdatePermissions(SelectedGroup);
+                    });
+
                 }
 
                 

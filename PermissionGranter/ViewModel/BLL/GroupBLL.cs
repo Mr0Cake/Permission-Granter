@@ -95,7 +95,7 @@ namespace PermissionGranter.ViewModel.BLL
             //UserGroup.GroupID, GroupName, UserGroup.WinUserID, Description
             ug.GroupID = arg.GetInt32(0);
             ug.GroupName = arg.GetString(1);
-            ug.DummyUser = arg.GetInt32(2);
+            ug.DummyUser = arg.IsDBNull(2) ? -1 : arg.GetInt32(2);
             ug.Description = arg.GetString(3);
             return ug;
         }

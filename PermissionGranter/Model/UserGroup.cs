@@ -117,6 +117,7 @@ namespace PermissionGranter.Model
             copy.GroupID = GroupID;
             copy.OwnedPermissions = OwnedPermissions.GetCopy();
             copy.Description = Description;
+            copy.DummyUser = DummyUser;
             return copy;
         }
     }

@@ -12,7 +12,7 @@ namespace PermissionGranter.ViewModel.BLL
     {
         public ConcurrentDictionary<PermissionsBase, Action> DeleteFromDatabase = new ConcurrentDictionary<PermissionsBase, Action>();
         public ConcurrentDictionary<GroupAdd, Action> GroupActions = new ConcurrentDictionary<GroupAdd, Action>();
-        public ConcurrentDictionary<PermissionsBase, Action> PermissionsActions = new ConcurrentDictionary<PermissionsBase, Action>)();
+        public ConcurrentDictionary<PermissionsBase, Action> PermissionsActions = new ConcurrentDictionary<PermissionsBase, Action>();
 
         public DelayedDatabaseActions()
         {
@@ -22,10 +22,12 @@ namespace PermissionGranter.ViewModel.BLL
         public void UpdatePermissions(PermissionsBase pb)
         {
             PermissionsBase copy = pb.GetCopy();
+            Action remove;
+            PermissionsActions.TryRemove(copy, out remove);
             PermissionsActions.TryAdd(copy, () => PermissionsBLL.ReplacePermissions(copy));
         }
 
-        public void CancelUpdatePermissions(pb)
+        public void CancelUpdatePermissions(PermissionsBase pb)
         {
             PermissionsBase copy = pb.GetCopy();
             Action remove;
@@ -36,14 +38,17 @@ namespace PermissionGranter.ViewModel.BLL
         {
             DeleteFromDatabase.ToList().ForEach(x => x.Value.Invoke());
             GroupActions.ToList().ForEach(x => x.Value.Invoke());
+            PermissionsActions.ToList().ForEach(x => x.Value.Invoke());
             DeleteFromDatabase.Clear();
             GroupActions.Clear();
+            PermissionsActions.Clear();
         }
 
         public void Cancel()
         {
             DeleteFromDatabase.Clear();
             GroupActions.Clear();
+            PermissionsActions.Clear();
         }
 
         public void DeletePermissionsBase(PermissionsBase obj)

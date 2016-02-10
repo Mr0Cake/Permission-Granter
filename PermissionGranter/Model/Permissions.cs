@@ -263,14 +263,22 @@ namespace PermissionGranter.Model
             foreach (var e in this.AllowPermissions)
             {
                 HashSet<string> copyPerms = new HashSet<string>();
-                copyPerms.AddRange(e.Value);
+                if (e.Value != null)
+                {
+                    copyPerms.AddRange(e.Value);
+                }
+                else { copyPerms = null; }
                 p.AllowPermissions.Add(e.Key, copyPerms);
             }
             foreach (var e in this.DenyPermissions)
             {
                 HashSet<string> copyPerms = new HashSet<string>();
-                copyPerms.AddRange(e.Value);
-                p.DenyPermissions.Add(e.Key, copyPerms);
+                if (e.Value != null)
+                { 
+                    copyPerms.AddRange(e.Value);
+                }
+                else { copyPerms = null; }
+            p.DenyPermissions.Add(e.Key, copyPerms);
             }
             return p;
         }

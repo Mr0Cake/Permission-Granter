@@ -25,7 +25,7 @@ namespace PermissionGranter
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             // TODO: Parse commandline arguments and other startup work 
-            if(ViewModel.Services.ViewModelLocator.UserSession == null)
+            //if(ViewModel.Services.ViewModelLocator.UserSession == null)
             ViewModel.Services.ViewModelLocator.UserSession = new Session(); 
         }
     }

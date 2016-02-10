@@ -41,18 +41,24 @@ namespace PermissionGranter.ViewModel.BLL
                             tasklist.Add(Task.Factory.StartNew(() => DeleteControlPermissions(currentID, permission.Key)));
 
                         HashSet<string> DeletePermissions = new HashSet<string>();
-                        DeletePermissions.AddRange(oldPermissions[permission.Key]);
-                        foreach (string s in permission.Value)
+                        HashSet<string> AddPermissions = oldPermissions[permission.Key];
+
+                        if (AddPermissions != null)
                         {
-                            if (!DeletePermissions.Remove(s))
+                            DeletePermissions.AddRange(oldPermissions[permission.Key]);
+                            foreach (string s in permission.Value)
                             {
-                                up.Control = permission.Key;
-                                up.Permission = s;
-                                up.AccessValue = AccessValue;
-                                //add permission
-                                tasklist.Add(Task.Factory.StartNew(() => SetPermissionByUserID(currentID, up)));
+                                if (!DeletePermissions.Remove(s))
+                                {
+                                    up.Control = permission.Key;
+                                    up.Permission = s;
+                                    up.AccessValue = AccessValue;
+                                    //add permission
+                                    tasklist.Add(Task.Factory.StartNew(() => SetPermissionByUserID(currentID, up)));
+                                }
                             }
                         }
+                        else { throw new Exception("addpermission = null"); }
                         if (DeletePermissions.Count > 0)
                         {
                             foreach (string s in DeletePermissions)
@@ -349,18 +355,22 @@ namespace PermissionGranter.ViewModel.BLL
         //INSERT METHODS
         public static void SetPermissionByUserID(int userID, UserPermission ucp)
         {
+            byte Value = (byte)(ucp.AccessValue ? 1 : 0);
             DAL.DAL.ExecuteNonQuery("I_User_ControlPermission_ByControlName_ByPermissionName",
                 DAL.DAL.Parameter("UserID", userID), 
                 DAL.DAL.Parameter("ControlName", ucp.Control), 
-                DAL.DAL.Parameter("PermissionName", ucp.Permission)
+                DAL.DAL.Parameter("PermissionName", ucp.Permission),
+                DAL.DAL.Parameter("Value", Value)
             );
         }
 
         public static void SetPermissionByUserID(int userID, UserControlPermission ucp)
         {
-            DAL.DAL.ExecuteNonQuery("I_User_ControlPermission_ByControlName_ByPermissionName",
+            byte Value = (byte)(ucp.AccessValue ? 1 : 0);
+            DAL.DAL.ExecuteNonQuery("I_User_ControlPermission_ByControlName",
                 DAL.DAL.Parameter("UserID", userID),
-                DAL.DAL.Parameter("ControlName", ucp.Control)
+                DAL.DAL.Parameter("ControlName", ucp.Control),
+                DAL.DAL.Parameter("Value", Value)
             );
         }
 
@@ -410,8 +420,8 @@ namespace PermissionGranter.ViewModel.BLL
         {
             UserPermission perm = new UserPermission();
             perm.Control = sq.GetString(2);
-            perm.AccessValue = sq.GetBoolean(3);
-            perm.Permission = sq.GetString(4);
+            perm.AccessValue = sq.GetByte(3) == (byte)1 ? true : false;
+            perm.Permission = sq.IsDBNull(4) ? "" : sq.GetString(4);
             return perm;
         }
     }
