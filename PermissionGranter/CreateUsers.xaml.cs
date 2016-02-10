@@ -15,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using PermissionGranter.ViewModel;
+using PermissionGranter.ViewModel.BLL;
 
 namespace PermissionGranter
 {
@@ -43,20 +45,21 @@ namespace PermissionGranter
             InitializeComponent();
             this.MenuName = this.GetType().Name;
             lstUsers.ItemsSource = Users;
-            PermissionsFull = new Dictionary<string, Action>();
-            PermissionsFull.Add("Print", new Action(() => permissionPrint()));
-            PermissionsFull.Add("New", new Action(() => permissionNew()));
-            PermissionsFull.Add("Find", new Action(() => permissionFind()));
-            PermissionsFull.Add("Save", new Action(() => permissionSave()));
-            PermissionsFull.Add("Delete", new Action(() => permissionDelete()));
-            //MenuItems.Add(this);
-            //CreateTreeView();
-            createUserItems = new MenuItems();
-            createUserItems.Items.Add(new CustTreeItems(this.MenuName, true));
-
-            foreach (string s in PermissionsFull.Keys)
-                createUserItems.Items[0].Options.Add(new Permission(createUserItems.Items[0],s, true));
+            ExecutableActions = new Dictionary<string, Tuple<string, Action>>();
+            ExecutableActions.Add("Print", Tuple.Create("Print the current document.",new Action(() => permissionPrint())));
+            ExecutableActions.Add("New", Tuple.Create("Create a new document.", new Action(() => permissionNew())));
+            ExecutableActions.Add("Find", Tuple.Create("Look for given string in documents.", new Action(() => permissionFind())));
+            ExecutableActions.Add("Save", Tuple.Create("Save document to hard-drive.", new Action(() => permissionSave())));
+            ExecutableActions.Add("Delete", Tuple.Create("Delete the current document.", new Action(() => permissionDelete())));
+            ExecutableActions.Add("Help", Tuple.Create("Open a new window that displays help information.", new Action(() => permissionHelp())));
+            ExecutableActions.Add("Close", Tuple.Create("Close the current document.", new Action(() => permissionClose())));
+            ExecutableActions.Add("Cancel", Tuple.Create("Undo changes in the current document and reload the last save.", new Action(() => permissionDelete())));
+          
+            createUserItems = PermissionsBLL.GetTreeMenu();
+            
             trvUser.ItemsSource = createUserItems;
+            mnu.ItemsSource = createUserItems;
+            
         }
 
         public MenuItems createUserItems { get; set; }
@@ -65,7 +68,7 @@ namespace PermissionGranter
 
         private void btnCreate_Click(object sender, RoutedEventArgs e)
         {
-            User tempUser = new User(txtLasttName.Text, txtFirstName.Text, txtFunction.Text);
+            User tempUser = new User(txtLasttName.Text, txtFirstName.Text);
             Random r = new Random();
             HashSet<string> actions = new HashSet<string>();
             HashSet<string> deny = new HashSet<string>();
@@ -73,26 +76,28 @@ namespace PermissionGranter
             for(int i = 0; i<3; i++)
             {
                 int ran = r.Next(0, 3);
-                string input = getKeyInt(PermissionsFull, ran);
+                string input = getKeyInt(ExecutableActions, ran);
                 actions.Add(input);
             }
-            string type = this.GetType().Name;
-            tempUser.UserPermissions.AllowPermissions.Add(type, actions);
-            tempUser.UserPermissions.DenyPermissions.Add(type, deny);
-            tempUser.UserPermissions.CalculatePermissions();
+            string type = "Word";
+            tempUser.OwnedPermissions.AllowPermissions.Add(type, actions);
+            tempUser.OwnedPermissions.DenyPermissions.Add(type, deny);
+            tempUser.OwnedPermissions.CalculatePermissions();
             Users.Add(tempUser);
+            CheckBox cb = new CheckBox();
+            
 
         }
 
-        private string getKeyInt(Dictionary<string, Action> dic, int pos)
+        private string getKeyInt(Dictionary<string, Tuple<string,Action>> dic, int pos)
         {
             string output = "";
             int i = 0;
-            foreach(KeyValuePair<string, Action> kvp in dic)
+            foreach(string s in dic.Keys)
             {
                 if(i++ == pos)
                 {
-                    return kvp.Key;
+                    return s;
                 }
             }
             return output;
@@ -100,51 +105,66 @@ namespace PermissionGranter
 
         private void button_Click(object sender, RoutedEventArgs e)
         {
-            PermissionsFull[(sender as Button).Content.ToString()].Invoke();
+            ExecutableActions[(sender as Button).Content.ToString()].Item2.Invoke();
         }
 
+        private User previousUser = null;
         private void lstUsers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            //save dictionary
+            if (previousUser != null)
+                PermissionsTreeViewAdapter.FillPermissions(previousUser, createUserItems);
+            //vul buttons
             loadButtons((sender as ListBox).SelectedItem);
-            PermissionsToTreeViewAdapter.FillMenuItems(createUserItems, ((sender as ListBox).SelectedItem) as User);
-            //TODO SAVE TO DICTIONARY WHEN CHANGE
-
+            //vul treeview
+            PermissionsTreeViewAdapter.FillMenuItems(createUserItems, ((sender as ListBox).SelectedItem) as User);
+            
+            
+            previousUser = (sender as ListBox).SelectedItem as User;
         }
 
         private void loadButtons(object selectedItem)
         {
             User u = selectedItem as User;
             spButtons.Children.Clear();
-            string type = this.GetType().Name;
-            MessageBox.Show("cleared");
-            foreach (string s in u.UserCalculatedPermission[type])
+            string type = "Word";
+            //MessageBox.Show("cleared");
+            foreach (string s in u.UserCalculatedPermission["Word"])
             {
                 Action b = null;
-                PermissionsFull.TryGetValue(s, out b);
-                if (b != null)
+                //PermissionsFull.TryGetValue(s, out b);
+                Tuple<string, Action> descAction;
+                ExecutableActions.TryGetValue(s, out descAction);
+                if (descAction != null)
                 {
-                    Button button = new Button();
-                    button.Content = s;
-                    button.Click += new RoutedEventHandler((x,e) => b.Invoke());
-                    spButtons.Children.Add(button);
+                    b = descAction.Item2;
+                    if (b != null)
+                    {
+                        Button button = new Button();
+                        button.Content = s;
+                        button.Click += new RoutedEventHandler((x, e) => b.Invoke());
+                        spButtons.Children.Add(button);
+                    }
                 }
             }
         }
 
-        private Dictionary<string,Action> _PermissionsFull;
-
-        public Dictionary<string,Action> PermissionsFull
-        {
-            get { return _PermissionsFull; }
-            set { _PermissionsFull = value; }
-        }
-
         
 
-        public Dictionary<string, Action> getFullPermissions()
+        private Dictionary<string, Tuple<string, Action>> _ExecutableActions;
+        public Dictionary<string, Tuple<string, Action>> ExecutableActions
         {
-            return PermissionsFull;
+            get
+            {
+                return _ExecutableActions;
+            }
+
+            set
+            {
+                _ExecutableActions = value;
+            }
         }
+
 
         public void permissionNew()
         {

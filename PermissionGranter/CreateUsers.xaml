@@ -4,8 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PermissionGranter" x:Class="PermissionGranter.CreateUsers"
-            xmlns:self="clr-namespace:PermissionGranter.Model"
-             mc:Ignorable="d" 
+            xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
+            xmlns:converter="clr-namespace:PermissionGranter.ViewModel.Converters"
+            mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <Grid.ColumnDefinitions>
@@ -13,10 +14,11 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" MinHeight="10"/>
             <RowDefinition/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <StackPanel Grid.Column="0" Grid.Row="0">
+        <StackPanel Grid.Column="0" Grid.Row="1">
             <Label Content="Firstname"/>
             <TextBox x:Name="txtFirstName"/>
             <Label Content="Lastname"/>
@@ -25,31 +27,88 @@
             <TextBox x:Name="txtFunction"/>
             <Button x:Name="btnCreate" Click="btnCreate_Click" Content="Create"/>
         </StackPanel>
-        <StackPanel x:Name="spButtons" Grid.Column="1" Grid.Row="0" ScrollViewer.HorizontalScrollBarVisibility="Auto"/>
-        <TreeView Name="trvUser" Grid.Column="0" Grid.Row="1" ItemsSource="{Binding MenuItems}">
-            <TreeView.Resources>
-                <HierarchicalDataTemplate DataType="{x:Type self:CustTreeItems}" ItemsSource="{Binding Items}">
-                    <StackPanel Orientation="Horizontal">
-                        <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" ></CheckBox>
-                        <TextBlock Text="{Binding Path=Name}" />
-                        <ListBox Background="Transparent" BorderThickness="0" ItemsSource="{Binding Options}" >
-                            <ListBox.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <StackPanel Orientation="Horizontal"/>
-                                </ItemsPanelTemplate>
-                            </ListBox.ItemsPanel>
-                            <ListBox.ItemTemplate  >
-                                <DataTemplate  DataType="{x:Type self:Permission}" >
-                                    <CheckBox Style="{StaticResource SimpleCheckBox}" IsThreeState="True" ToolTip="{Binding Name}" IsChecked="{Binding Value, Mode=TwoWay}" Margin="0" Template="{DynamicResource CheckBoxTemplate}"></CheckBox>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </StackPanel>
+        <Menu Name="mnu" Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2" ItemsSource="{Binding MenuItems}">
+            <Menu.ItemContainerStyle>
+                <Style TargetType="{x:Type MenuItem}">
+                    <Setter Property="Command" Value="{Binding Command}" />
+                </Style>
+            </Menu.ItemContainerStyle>
+            <Menu.ItemTemplate>
+                <HierarchicalDataTemplate DataType="{x:Type viewModel:CustTreeItems}" ItemsSource="{Binding Items}">
+                    <TextBlock Text="{Binding Name}"/>
                 </HierarchicalDataTemplate>
-                
-            </TreeView.Resources>
-        </TreeView>
-        <StackPanel Grid.Row="1" Grid.Column="1" >
+            </Menu.ItemTemplate>
+        </Menu>
+        <StackPanel x:Name="spButtons" Grid.Column="1" Grid.Row="1" />
+        <ScrollViewer Grid.Column="0" Grid.Row="2" ScrollViewer.VerticalScrollBarVisibility="Auto" Height="150">
+            <TreeView Name="trvUser"  ItemsSource="{Binding MenuItems}">
+                <TreeView.Resources>
+                    <HierarchicalDataTemplate DataType="{x:Type viewModel:CustTreeItems}" ItemsSource="{Binding Items}">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" />
+                            <TextBlock Text="{Binding Path=Name}"  FontFamily="{StaticResource TreeViewFont}">
+                                <TextBlock.Style>
+                                    <Style>
+                                        <Style.Setters>
+                                            <Setter Property="TextBlock.Foreground" Value="{DynamicResource TopLevelTreeViewItemColor}"/>
+                                        </Style.Setters>
+                                        <Style.Triggers>
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding HasParent}" Value="True" />
+                                                    <Condition Binding="{Binding Options.Count}" Value="0"  />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="TextBlock.FontSize" Value="18"></Setter>
+                                            </MultiDataTrigger>
+                                            <DataTrigger Binding="{Binding HasParent}" Value="false">
+                                                <Setter Property="TextBlock.FontWeight" Value="Bold"/>
+                                                <Setter Property="TextBlock.FontSize" Value="20" />
+                                            </DataTrigger>
+                                            <!--<DataTrigger Binding="{Binding Items.Count}" Value="0">
+                                            <Setter Property="TextBlock.FontSize" Value="15" />
+                                            <Setter Property="TextBlock.Foreground" Value="{DynamicResource BottomLevelTreeViewItemColor}"/>
+                                        </DataTrigger>-->
+                                            <DataTrigger Binding="{Binding Options.Count, Converter={StaticResource IsGreaterThanConverter},ConverterParameter=0}" Value="true" >
+                                                <Setter Property="TextBlock.FontSize" Value="15" />
+                                                <Setter Property="TextBlock.Foreground" Value="{DynamicResource BottomLevelTreeViewItemColor}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <ListBox Margin="2,0,0,0" Background="Transparent" BorderThickness="0" ItemsSource="{Binding Options}" >
+                                <ListBox.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ListBox.ItemsPanel>
+                                <ListBox.ItemTemplate  >
+                                    <DataTemplate  DataType="{x:Type viewModel:Permission}" >
+                                        <Border Name="Border" Padding="0" SnapsToDevicePixels="true" Background="Transparent" Margin="0">
+                                            <CheckBox Style="{StaticResource SimpleCheckBox}" IsThreeState="True" Tag="{Binding Name}"  IsChecked="{Binding Value, Mode=TwoWay}" Margin="0" Padding="0" Template="{DynamicResource CheckBoxTemplate}">
+                                                <CheckBox.ToolTip>
+                                                    <ToolTip Template="{DynamicResource ColoredToolTip}" >
+
+                                                        <StackPanel Background="Transparent">
+                                                            <TextBlock Foreground="{DynamicResource ToolTipForeGround}" Text="{Binding Name}" FontWeight="Bold" Background="Transparent">
+
+                                                            </TextBlock>
+                                                            <TextBlock Foreground="{DynamicResource ToolTipForeGround}" Text="{Binding Description}" Background="Transparent"></TextBlock>
+                                                        </StackPanel>
+                                                    </ToolTip>
+                                                </CheckBox.ToolTip>
+                                            </CheckBox>
+                                        </Border>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+
+                </TreeView.Resources>
+            </TreeView>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Grid.Column="1" >
             <ListBox x:Name="lstUsers"  SelectionChanged="lstUsers_SelectionChanged" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
             <TextBlock Name="txtOutput"></TextBlock>
         </StackPanel>

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using PermissionGranter.ViewModel;
+using PermissionGranter.ViewModel.Utility;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -15,10 +18,20 @@ namespace PermissionGranter.Model
     /// Permissies kunnen geweigerd worden, deze worden uitgezet na berekening van de groep en user permissies
     /// Dus een weigering van een permissie heeft voorang op de toegang van een permissie
     /// </summary>
-    public class User: INotifyPropertyChanged
+    public class User: PermissionsBase
     {
         #region userInfo
+
+        public bool IsCorrect
+        {
+            get { return    !string.IsNullOrEmpty(LastName) && LastName.Length < 30 && 
+                            !string.IsNullOrEmpty(FirstName) && FirstName.Length < 30 &&
+                            !string.IsNullOrEmpty(Email) && Email.Length < 80 &&
+                            !string.IsNullOrEmpty(Password) && Password.Length < 50; }
+        }
+
         
+
 
         private string _LastName;
 
@@ -28,6 +41,8 @@ namespace PermissionGranter.Model
             set 
             { 
                 _LastName = value;
+                NotifyPropertyChanged("Output");
+                NotifyPropertyChanged("Iscorrect");
                 NotifyPropertyChanged("LastName");
             }
         }
@@ -40,48 +55,64 @@ namespace PermissionGranter.Model
             set
             {
                 _FirstName = value;
+                NotifyPropertyChanged("Output");
+                NotifyPropertyChanged("Iscorrect");
                 NotifyPropertyChanged("FirstName");
             }
         }
 
-        private string _Function;
 
-        public string Function
+        public int UserID { get; set; }
+
+        private string _Password;
+
+        public string Password
         {
-            get { return _Function; }
+            get { return _Password; }
             set
             {
-                _Function = value;
-                NotifyPropertyChanged("Function");
+                string salt = base.InstanceID.ToString() ;
+                string password = value;
+                PasswordEncryption.EncryptPassword(ref password, 0, out salt);
+                _Password = password;
+
+                NotifyPropertyChanged("Iscorrect");
+                NotifyPropertyChanged("Password");
             }
         }
+
+        private string _Email;
+
+        public string Email
+        {
+            get { return _Email; }
+            set
+            {
+                _Email = value;
+                NotifyPropertyChanged("Iscorrect");
+                NotifyPropertyChanged("Email");
+            }
+        }
+
+
+        
+        
 
         #endregion
 
         #region userPermissions
         //usergroups
-        private List<UserGroup> _UserGroupPermissions = new List<UserGroup>();
+        private IList<UserGroup> _UserGroupPermissions = null;
 
         /// <summary>
         /// Array van Usergroups waar de gebruiker toe behoord.
         /// </summary>
-        public List<UserGroup> UserGroupPermissions
+        public IList<UserGroup> UserGroupPermissions
         {
-            get { return _UserGroupPermissions; }
+            get { return _UserGroupPermissions ?? (_UserGroupPermissions = ViewModel.BLL.GroupBLL.GetGroupsByUserID(this.UserID)); }
             set { _UserGroupPermissions = value; }
         }
-
-        //userAccessPermissions
-        private Permissions _UserPermissions = new Permissions();
-
-        /// <summary>
-        /// Permissions die gezet zijn specifiek voor de gebruiker
-        /// </summary>
-        public Permissions UserPermissions
-        {
-            get { return _UserPermissions; }
-            set { _UserPermissions = value; }
-        }
+        
 
         //calculatePermission
         private Dictionary<string, HashSet<string>> _UserCalculatedPermission;
@@ -104,22 +135,23 @@ namespace PermissionGranter.Model
             }
             set { _UserCalculatedPermission = value; }
         }
+        
 
-        //create a new Permissions object with allowed permissions and denied permissions combined
+        //combineer allow en deny van alle groepen en voeg samen in 1 permissions object
         private Permissions calculatePermissions()
         {
             if (UserGroupPermissions.Count() > 0)
             {
-                Permissions p = UserPermissions;
+                Permissions p = OwnedPermissions;
                 foreach (UserGroup usergroupPerms in UserGroupPermissions)
-                    p = Permissions.combinePermissions(p, usergroupPerms.GroupPermissions);
+                    p = Permissions.combinePermissions(p, usergroupPerms.OwnedPermissions);
                 p.CalculatePermissions();
                 this.UserCalculatedPermission = p.CalculatedPermissions;
                 return p;
             }
             else
             {
-                return UserPermissions;
+                return OwnedPermissions;
             }
         }
 
@@ -128,13 +160,37 @@ namespace PermissionGranter.Model
         
         #endregion
 
+
+        public User()
+        {
+            UserID = -1;
+            Changed = false;
+            InstanceID = Guid.NewGuid();
+        }
+
+        public User(int userID)
+        {
+            InstanceID = Guid.NewGuid();
+            UserID = userID;
+            Changed = false;
+        }
         
-        public User(string lastname, string firstname, string function)
+        public User(int userID, string lastname, string firstname):this(userID)
         {
             LastName = lastname;
             FirstName = firstname;
-            Function = function;
-        
+        }
+
+        public User(string lastname, string firstname):this()
+        {
+            LastName = lastname;
+            FirstName = firstname;
+
+        }
+
+        public string Output
+        {
+            get { return ToString(); }
         }
 
         public override string ToString()
@@ -142,14 +198,20 @@ namespace PermissionGranter.Model
             return FirstName + " " + LastName;
         }
 
-        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        public override PermissionsBase GetCopy()
         {
-            if (PropertyChanged != null)
+            User u = new User(this.LastName, this.FirstName);
+            u.InstanceID = InstanceID;
+            u.Email = Email;
+            u.Password = Password;
+            u.UserID = UserID;
+            u.OwnedPermissions = this.OwnedPermissions.GetCopy();
+            u.UserGroupPermissions = new List<UserGroup>();
+            foreach (UserGroup group in UserGroupPermissions)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                u.UserGroupPermissions.Add(group.GetCopy() as UserGroup);
             }
+            return u;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

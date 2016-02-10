@@ -69,13 +69,67 @@
     <Compile Include="ExtensionMethodsTest.xaml.cs">
       <DependentUpon>ExtensionMethodsTest.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Model\MenuItems.cs" />
+    <Compile Include="ViewModel\BIL.cs" />
+    <Compile Include="ViewModel\BLL\BO\HashSaltCount.cs" />
+    <Compile Include="ViewModel\BLL\BO\MenuItem.cs" />
+    <Compile Include="ViewModel\BLL\BO\UserControlPermission.cs" />
+    <Compile Include="ViewModel\BLL\BO\UserPermission.cs" />
+    <Compile Include="ViewModel\BLL\DelayedDatabaseActions.cs" />
+    <Compile Include="ViewModel\BLL\GroupBLL.cs" />
+    <Compile Include="ViewModel\BLL\PermissionsBLL.cs" />
+    <Compile Include="ViewModel\BLL\UIBLL.cs" />
+    <Compile Include="ViewModel\BLL\UserBLL.cs" />
+    <Compile Include="ViewModel\Converters\IsGreaterThanConverter.cs" />
+    <Compile Include="ViewModel\Extensions\FindFirstInstance.cs" />
+    <Compile Include="ViewModel\Extensions\SqlExtensions.cs" />
+    <Compile Include="ViewModel\GroupDetailViewModel.cs" />
+    <Compile Include="ViewModel\MenuItems.cs" />
     <Compile Include="Model\Permissions.cs" />
     <Compile Include="Model\DefaultPermissionControl.cs" />
     <Compile Include="Model\ExtensionMethods.cs" />
-    <Compile Include="Model\CustTreeItems.cs" />
-    <Compile Include="Model\PermissionsToTreeViewAdapter.cs" />
+    <Compile Include="ViewModel\CustTreeItems.cs" />
+    <Compile Include="Model\PermissionsBase.cs" />
+    <Compile Include="ViewModel\Messages\CloseApplication.cs" />
+    <Compile Include="ViewModel\Messages\CloseGroupDetail.cs" />
+    <Compile Include="ViewModel\Messages\CloseUserDetail.cs" />
+    <Compile Include="ViewModel\Messages\CloseWindow.cs" />
+    <Compile Include="ViewModel\Messages\DoLogin.cs" />
+    <Compile Include="ViewModel\Messages\GroupChanged.cs" />
+    <Compile Include="ViewModel\Messages\UserDeleted.cs" />
+    <Compile Include="ViewModel\Messages\UsersUpdated.cs" />
+    <Compile Include="ViewModel\NotifyPropertyChangedBase.cs" />
+    <Compile Include="ViewModel\PermissionsTreeViewAdapter.cs" />
     <Compile Include="Model\UserGroup.cs" />
+    <Compile Include="ViewModel\DAL\DAL.cs" />
+    <Compile Include="ViewModel\DynamicDataReader.cs" />
+    <Compile Include="ViewModel\PasswordEncryption.cs" />
+    <Compile Include="ViewModel\Services\DialogService.cs" />
+    <Compile Include="ViewModel\Services\IUserDataService.cs" />
+    <Compile Include="ViewModel\Services\Messenger.cs" />
+    <Compile Include="ViewModel\Services\UserDataService.cs" />
+    <Compile Include="ViewModel\Services\ViewModelLocator.cs" />
+    <Compile Include="ViewModel\Session.cs" />
+    <Compile Include="ViewModel\UserDetailViewModel.cs" />
+    <Compile Include="ViewModel\Users.cs" />
+    <Compile Include="ViewModel\Utility\CanCopy.cs" />
+    <Compile Include="ViewModel\Utility\CustomCommand.cs" />
+    <Compile Include="ViewModel\Utility\IsViewModel.cs" />
+    <Compile Include="ViewModel\Utility\Memento.cs" />
+    <Compile Include="View\GroupDetail.xaml.cs">
+      <DependentUpon>GroupDetail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Login.xaml.cs">
+      <DependentUpon>Login.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\MenuItemWindow.xaml.cs">
+      <DependentUpon>MenuItemWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StartWindow.xaml.cs">
+      <DependentUpon>StartWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserDetail.xaml.cs">
+      <DependentUpon>UserDetail.xaml</DependentUpon>
+    </Compile>
     <Page Include="CheckedListBoxItem.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -100,10 +154,6 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Model\PermissionGranterControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Properties\DesignTimeResources.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -113,12 +163,28 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="View\GroupDetail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Login.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\MenuItemWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\StartWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\UserDetail.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Model\controlFactory.cs" />
-    <Compile Include="Model\PermissionGranterControl.xaml.cs">
-      <DependentUpon>PermissionGranterControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Model\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -146,9 +212,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="View\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,10 +1,17 @@
 ﻿<Application x:Class="PermissionGranter.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml">
+             Startup="Application_Startup"
+             ShutdownMode="OnExplicitShutdown"
+             xmlns:local="clr-namespace:PermissionGranter"
+             xmlns:services="clr-namespace:PermissionGranter.ViewModel.Services"
+             xmlns:converter="clr-namespace:PermissionGranter.ViewModel.Converters"
+             >
     <Application.Resources>
-
-        <ResourceDictionary>
+        
+            <ResourceDictionary>
+            <services:ViewModelLocator x:Key="MainViewModelLocator"/>
+            <converter:IsGreaterThanConverter x:Key="IsGreaterThanConverter"/>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="StyleDictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>

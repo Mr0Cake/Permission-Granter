@@ -1,0 +1,138 @@
+﻿<Window x:Class="PermissionGranter.View.GroupDetail"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+         xmlns:local="clr-namespace:PermissionGranter.View"
+        xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
+        mc:Ignorable="d"
+        Title="GroupDetail" Height="465" Width="600"
+        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=GroupDetails}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Name="spUserInfo" Grid.Column="0" Margin="5">
+            <StackPanel Orientation="Horizontal">
+                <Label Foreground="LightGray">Groepdetails</Label>
+            </StackPanel >
+
+            <Label Margin="5,0,0,0">Groepnaam:</Label>
+            <TextBox Name="txtGroepnaam" Text="{Binding ElementName=lstGroups, Path=SelectedItem.GroupName, Mode=TwoWay}" MaxLength="50" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <Label Margin="5,0,0,0">Omschrijving:</Label>
+            <TextBox Name="txtOmschrijving" Text="{Binding ElementName=lstGroups, Path=SelectedItem.Description, Mode=TwoWay}" MaxLength="250" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+
+
+            <Label Margin="5,0,0,0">Groepen:</Label>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ListBox Name="lstGroups" ItemsSource="{Binding AllGroups}" SelectedItem="{Binding SelectedGroup}" Height="90" 
+                    ItemContainerStyle="{StaticResource ValidationStyle}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Label Content="{Binding GroupName}" />
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+            </ScrollViewer>
+            
+            <DockPanel  Margin="0,2,2,0" Width="{Binding ElementName=spUserInfo, Path=ActualWidth-2}">
+                <Button Name="btnAddGroup" Command="{Binding AddGroup}" HorizontalAlignment="Left" 
+                        FocusManager.FocusedElement="{Binding ElementName=txtGroepnaam}">New</Button>
+                <Button Name="btnRemoveGroup"  Style="{StaticResource ButtonDeleteStyle}" HorizontalAlignment="Right" Command="{Binding RemoveGroup}"  IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Delete</Button>
+                
+            </DockPanel>
+
+            <Label Margin="5,0,0,0">Gebruikers:</Label>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ListBox Name="lstUsers" ItemsSource="{Binding SelectedGroup.GroupUsers}" SelectedItem="{Binding SelectedUser}" Height="90" />
+            </ScrollViewer>
+
+            <ComboBox Name="cmbUsers" ItemsSource="{Binding AllUsers}"  SelectedItem="{Binding SelectedAddUser}" Margin="0,5,0,2"></ComboBox>
+
+            <DockPanel  Margin="3" Width="{Binding ElementName=spUserInfo, Path=ActualWidth-2}">
+                <Button Name="btnAddUserToGroup" HorizontalAlignment="Left" Command="{Binding AddUserToGroup}" IsEnabled="{Binding ElementName=lstAllGroups, Path=SelectedItems.Count}">Add</Button>
+                <Button Name="btnRemoveUserFromGroup" HorizontalAlignment="Left" Command="{Binding RemoveUserFromGroup}" Style="{StaticResource ButtonDeleteStyle}" IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Remove</Button>
+
+                <Button Name="btnSave"  HorizontalAlignment="Left" Command="{Binding SaveCommand}" Style="{StaticResource ButtonStyle}">Save</Button>
+
+                <Button Name="btnCancel"  HorizontalAlignment="Right" Command="{Binding CancelCommand}">Cancel</Button>
+            </DockPanel>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Name="spCopy" Grid.Column="1" Panel.ZIndex="1" VerticalAlignment="Bottom" HorizontalAlignment="Left">
+            <Button Content="Copy" Command="{Binding CopyCommand}" Style="{StaticResource ButtonStyle}"/>
+            <Button Content="Paste" Command="{Binding PasteCommand}" Style="{StaticResource ButtonStyle}"/>
+        </StackPanel>
+        <ScrollViewer Name="Permissions" Grid.Column="1" Panel.ZIndex="0" >
+            
+                <TreeView Name="trvUser" Padding="0,0,0,20" ItemsSource="{Binding CompleteMenu}">
+                    <TreeView.Resources>
+                        <HierarchicalDataTemplate DataType="{x:Type viewModel:CustTreeItems}" ItemsSource="{Binding Items}">
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" />
+                                <TextBlock Text="{Binding Path=Name}"  FontFamily="{StaticResource TreeViewFont}">
+                                    <TextBlock.Style>
+                                        <Style>
+                                            <Style.Setters>
+                                                <Setter Property="TextBlock.Foreground" Value="{DynamicResource TopLevelTreeViewItemColor}"/>
+                                            </Style.Setters>
+                                            <Style.Triggers>
+                                                <MultiDataTrigger>
+                                                    <MultiDataTrigger.Conditions>
+                                                        <Condition Binding="{Binding HasParent}" Value="True" />
+                                                        <Condition Binding="{Binding Options.Count}" Value="0"  />
+                                                    </MultiDataTrigger.Conditions>
+                                                    <Setter Property="TextBlock.FontSize" Value="18"></Setter>
+                                                </MultiDataTrigger>
+                                                <DataTrigger Binding="{Binding HasParent}" Value="false">
+                                                    <Setter Property="TextBlock.FontWeight" Value="Bold"/>
+                                                    <Setter Property="TextBlock.FontSize" Value="20" />
+                                                </DataTrigger>
+                                                <!--<DataTrigger Binding="{Binding Items.Count}" Value="0">
+                                            <Setter Property="TextBlock.FontSize" Value="15" />
+                                            <Setter Property="TextBlock.Foreground" Value="{DynamicResource BottomLevelTreeViewItemColor}"/>
+                                        </DataTrigger>-->
+                                                <DataTrigger Binding="{Binding Options.Count, Converter={StaticResource IsGreaterThanConverter},ConverterParameter=0}" Value="true" >
+                                                    <Setter Property="TextBlock.FontSize" Value="15" />
+                                                    <Setter Property="TextBlock.Foreground" Value="{DynamicResource BottomLevelTreeViewItemColor}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ListBox Margin="2,0,0,0" Background="Transparent" BorderThickness="0" ItemsSource="{Binding Options}" >
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemTemplate  >
+                                        <DataTemplate  DataType="{x:Type viewModel:Permission}" >
+                                            <Border Name="Border" Padding="0" SnapsToDevicePixels="true" Background="Transparent" Margin="0">
+                                                <CheckBox Style="{StaticResource SimpleCheckBox}" IsThreeState="True" Tag="{Binding Name}"  IsChecked="{Binding Value, Mode=TwoWay}" Margin="0" Padding="0" Template="{DynamicResource CheckBoxTemplate}">
+                                                    <CheckBox.ToolTip>
+                                                        <ToolTip Template="{DynamicResource ColoredToolTip}" >
+
+                                                            <StackPanel Background="Transparent">
+                                                                <TextBlock Foreground="{DynamicResource ToolTipForeGround}" Text="{Binding Name}" FontWeight="Bold" Background="Transparent">
+
+                                                                </TextBlock>
+                                                                <TextBlock Foreground="{DynamicResource ToolTipForeGround}" Text="{Binding Description}" Background="Transparent"></TextBlock>
+                                                            </StackPanel>
+                                                        </ToolTip>
+                                                    </CheckBox.ToolTip>
+                                                </CheckBox>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                </ListBox>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+
+                    </TreeView.Resources>
+                </TreeView>
+                
+        </ScrollViewer>
+    </Grid>
+</Window>

@@ -8,8 +8,7 @@ namespace PermissionGranter.Model
 {
     public interface DefaultPermissionControl
     {
-        List<DefaultPermissionControl> Children();
-        Dictionary<string, Action> getFullPermissions();
+        Dictionary<string, Tuple<string, Action>> ExecutableActions { get; set; }
         string MenuName { get; set; }
         void permissionNew();
         void permissionSave();
@@ -20,4 +19,6 @@ namespace PermissionGranter.Model
         void permissionHelp();
         void permissionClose();
     }
+
+    
 }

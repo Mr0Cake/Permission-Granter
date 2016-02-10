@@ -1,29 +1,177 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:local="clr-namespace:PermissionGranter">
+
+    <SolidColorBrush Color="#FF068F00" x:Key="CheckBox_Background" />
+    <SolidColorBrush Color="#FF720000" x:Key="CheckBox_Background_Print_Delete" />
+    <SolidColorBrush Color="Orange" x:Key="CheckBox_Background_Focus" />
+    <SolidColorBrush Color="White" x:Key="ToolTipForeGround" />
+    <SolidColorBrush Color="Blue" x:Key="TopLevelTreeViewItemColor"/>
+    <SolidColorBrush Color="DarkGray" x:Key="BottomLevelTreeViewItemColor"/>
+    <FontFamily x:Key="TreeViewFont">calibri light</FontFamily>
+
+
+    <Style x:Key="ValidationStyle" TargetType="{x:Type ListBoxItem}" >
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+        <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+        <Setter Property="Padding" Value="2,0,0,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="true">
+                            <!--<Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>-->
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="Black"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="true"/>
+                                <Condition Property="Selector.IsSelectionActive" Value="false"/>
+                            </MultiTrigger.Conditions>
+                            <!--<Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>-->
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsCorrect}" Value="false">
+                <Setter Property="Background" Value="Red"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Button" x:Key="ButtonStyle">
+        <Setter Property="Margin" Value="5,0,0,0"/>
+    </Style>
+
+    <Style TargetType="Button" x:Key="ButtonDeleteStyle" BasedOn="{StaticResource ButtonStyle}">
+        <Setter Property="Foreground" Value="Red"/>
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+
+    <Style TargetType="TextBox" x:Key="TextBoxPropertyStyle">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <!--<Setter Property="Margin" Value="5,0,0,0"/>-->
+        <Setter Property="Width" Value="120"/>
+    </Style>
+
+    <Style TargetType="Label" x:Key="LabelPropertyStyle">
+        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <!--<Setter Property="Margin" Value="5,0,0,0"/>-->
+    </Style>
+
+    <!--<Style TargetType="ListBox" x:Key="ListBoxStyle">
+        <Setter Property="Margin" Value="5,0,5,0"/>
+    </Style>-->
+
+    <Style TargetType="ListBox" x:Key="ListBoxValidationStyle" >
+        
+    </Style>
+
+    <ControlTemplate x:Key="ColoredToolTip" TargetType="ToolTip">
+        <Border Name="Border"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Width="{TemplateBinding Width}"
+                            Height="{TemplateBinding Height}"
+                            Background="{DynamicResource CheckBox_Background}"
+                            >
+                            
+                            <ContentPresenter Margin="4"
+                                          HorizontalAlignment="Left"
+                                          VerticalAlignment="Top"
+                                              
+                            />
+        </Border>
+        <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type CheckBox}}, Path=Tag}" Value="Print">
+                <Setter Property="Background" TargetName="Border" Value="{DynamicResource CheckBox_Background_Print_Delete}"></Setter>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType={x:Type CheckBox}}, Path=Tag}" Value="Delete">
+                <Setter Property="Background" TargetName="Border" Value="{DynamicResource CheckBox_Background_Print_Delete}"></Setter>
+            </DataTrigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <Style TargetType="{x:Type ListBoxItem}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="HorizontalContentAlignment" Value="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+        <Setter Property="VerticalContentAlignment" Value="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+        <Setter Property="Padding" Value="0,0,0,0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ListBoxItem}">
+                    <Border x:Name="Bd" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="true">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="true">
+                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.HighlightTextBrushKey}}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="true"/>
+                                <Condition Property="Selector.IsSelectionActive" Value="false"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Background" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightBrushKey}}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.InactiveSelectionHighlightTextBrushKey}}"/>
+                        </MultiTrigger>
+                        <Trigger Property="IsEnabled" Value="false">
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <Style x:Key="SimpleCheckBox" TargetType="{x:Type CheckBox}">
         <Setter Property="SnapsToDevicePixels" Value="true"/>
         <Setter Property="FocusVisualStyle" Value="{DynamicResource CheckBoxFocusVisual}"/>
-        <Setter Property="Background" Value="{DynamicResource NormalBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource NormalBackgroundBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource NormalBorderBrush}"/>
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type CheckBox}">
+                <ControlTemplate TargetType="{x:Type CheckBox}" >
 
                     <!-- BulletDecorator is used to provide baseline alignment between the checkmark and the Content -->
                     <BulletDecorator Background="Transparent">
                         <BulletDecorator.Bullet>
                             <Grid Width="13" Height="13">
-                                <Border x:Name="Border" BorderThickness="{TemplateBinding BorderThickness}" Background="#FF666666" BorderBrush="#FF333333"/>
-                                <Path x:Name="NullValue" StrokeThickness="2" SnapsToDevicePixels="False" Data="M3,4L9,9 M 5,2 A 5,5 180 1 0 7,2 Z" Stroke="#FFFFFFFF" />
+                                <!--Background="{DynamicResource CheckBox_Background}"-->
+                                <Border x:Name="Border" BorderThickness="{TemplateBinding BorderThickness}"  Background="{DynamicResource CheckBox_Background}" BorderBrush="#FF333333"/>
+                                <Path x:Name="NullValue" StrokeThickness="2" SnapsToDevicePixels="False" Data="M4,4L9,9 M 3,3 A 4,4 180 1 0 9,9  M 3,3 A 3,3 180 1 1 9,9" Stroke="#FFFFFFFF" />
                                 <Path x:Name="CheckMark" StrokeThickness="2" SnapsToDevicePixels="False" Data="M2,2L11,11 M2,11L11,2" Stroke="#FFFFFFFF"/>
                             </Grid>
                         </BulletDecorator.Bullet>
                         <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" RecognizesAccessKey="True"/>
                     </BulletDecorator>
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="BorderBrush" TargetName="Border" Value="#FFFFFFFF"/>
+
+                        <!--<DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Print">
+                            <Setter Property="Background" TargetName="Border" Value="{DynamicResource CheckBox_Background_Print_Delete}"></Setter>
+                        </DataTrigger>
+
+                        <DataTrigger Binding="{Binding RelativeSource={RelativeSource Self}, Path=Tag}" Value="Delete">
+                            <Setter Property="Background" TargetName="Border" Value="{DynamicResource CheckBox_Background_Print_Delete}"></Setter>
+                        </DataTrigger>-->
+
+                        <Trigger Property="IsFocused" Value="true">
+                            <Setter Property="Background" TargetName="Border" Value="{DynamicResource CheckBox_Background_Focus}"></Setter>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="false">
                             <Setter Property="Visibility" Value="Collapsed" TargetName="CheckMark"/>
@@ -39,6 +187,7 @@
                             <Setter Property="Background" Value="{DynamicResource DisabledBackgroundBrush}" TargetName="Border"/>
                             <Setter Property="BorderBrush" Value="{DynamicResource DisabledBorderBrush}" TargetName="Border"/>
                         </Trigger>
+                        
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>

@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{70A5DFE3-8E6D-4024-94BC-EFD75F9B65DD}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PermissionGranter</RootNamespace>
+    <AssemblyName>PermissionGranter</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CheckedListBoxItem.xaml.cs">
+      <DependentUpon>CheckedListBoxItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CreateUsers.xaml.cs">
+      <DependentUpon>CreateUsers.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ExtensionMethodsTest.xaml.cs">
+      <DependentUpon>ExtensionMethodsTest.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ViewModel\BIL.cs" />
+    <Compile Include="ViewModel\BLL\BO\HashSaltCount.cs" />
+    <Compile Include="ViewModel\BLL\BO\MenuItem.cs" />
+    <Compile Include="ViewModel\BLL\BO\UserControlPermission.cs" />
+    <Compile Include="ViewModel\BLL\BO\UserPermission.cs" />
+    <Compile Include="ViewModel\BLL\GroupBLL.cs" />
+    <Compile Include="ViewModel\BLL\PermissionsBLL.cs" />
+    <Compile Include="ViewModel\BLL\UIBLL.cs" />
+    <Compile Include="ViewModel\BLL\UserBLL.cs" />
+    <Compile Include="ViewModel\Converters\IsGreaterThanConverter.cs" />
+    <Compile Include="ViewModel\Extensions\SqlExtensions.cs" />
+    <Compile Include="ViewModel\GroupDetailViewModel.cs" />
+    <Compile Include="ViewModel\MenuItems.cs" />
+    <Compile Include="Model\Permissions.cs" />
+    <Compile Include="Model\DefaultPermissionControl.cs" />
+    <Compile Include="Model\ExtensionMethods.cs" />
+    <Compile Include="ViewModel\CustTreeItems.cs" />
+    <Compile Include="Model\PermissionsBase.cs" />
+    <Compile Include="ViewModel\Messages\CloseUserDetail.cs" />
+    <Compile Include="ViewModel\Messages\CloseWindow.cs" />
+    <Compile Include="ViewModel\Messages\GroupChanged.cs" />
+    <Compile Include="ViewModel\Messages\UserDeleted.cs" />
+    <Compile Include="ViewModel\NotifyPropertyChangedBase.cs" />
+    <Compile Include="ViewModel\PermissionsTreeViewAdapter.cs" />
+    <Compile Include="Model\UserGroup.cs" />
+    <Compile Include="ViewModel\DAL\DAL.cs" />
+    <Compile Include="ViewModel\DynamicDataReader.cs" />
+    <Compile Include="ViewModel\PasswordEncryption.cs" />
+    <Compile Include="ViewModel\Services\DialogService.cs" />
+    <Compile Include="ViewModel\Services\IUserDataService.cs" />
+    <Compile Include="ViewModel\Services\Messenger.cs" />
+    <Compile Include="ViewModel\Services\UserDataService.cs" />
+    <Compile Include="ViewModel\Services\ViewModelLocator.cs" />
+    <Compile Include="ViewModel\Session.cs" />
+    <Compile Include="ViewModel\UserDetailViewModel.cs" />
+    <Compile Include="ViewModel\UserGroups.cs" />
+    <Compile Include="ViewModel\Users.cs" />
+    <Compile Include="ViewModel\Utility\CanCopy.cs" />
+    <Compile Include="ViewModel\Utility\CustomCommand.cs" />
+    <Compile Include="ViewModel\Utility\IsViewModel.cs" />
+    <Compile Include="ViewModel\Utility\Memento.cs" />
+    <Compile Include="View\GroupDetail.xaml.cs">
+      <DependentUpon>GroupDetail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Login.xaml.cs">
+      <DependentUpon>Login.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\MenuItemWindow.xaml.cs">
+      <DependentUpon>MenuItemWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\StartWindow.xaml.cs">
+      <DependentUpon>StartWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\UserDetail.xaml.cs">
+      <DependentUpon>UserDetail.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Model\User.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <ItemGroup>
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Accessibility.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\Microsoft.CSharp.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\mscorlib.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationCore.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationFramework.dll" />
+    <ReferencePath Include="C:\WINDOWS\Microsoft.Net\assembly\GAC_MSIL\PresentationUI\v4.0_4.0.0.0__31bf3856ad364e35\PresentationUI.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\ReachFramework.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Core.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.DataSetExtensions.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Data.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Deployment.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Printing.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xaml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\System.Xml.Linq.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\UIAutomationProvider.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\UIAutomationTypes.dll" />
+    <ReferencePath Include="C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\WindowsBase.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\CheckedListBoxItem.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\CreateUsers.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\ExtensionMethodsTest.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\MainWindow.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\View\GroupDetail.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\View\Login.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\View\MenuItemWindow.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\View\StartWindow.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\View\UserDetail.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\App.g.cs" />
+    <Compile Include="C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\GeneratedInternalTypeHelper.g.cs" />
+  </ItemGroup>
+</Project>

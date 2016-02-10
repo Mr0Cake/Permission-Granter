@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PermissionGranter.Model
+namespace PermissionGranter.ViewModel
 {
     public class MenuItems:INotifyPropertyChanged,IEnumerable
     {
@@ -32,12 +32,6 @@ namespace PermissionGranter.Model
         }
 
 
-        //private string _Name;
-
-        //public string Name 
-        //{ 
-        //    get{return _Name;} set{OnPropertyChanged("Name"); _Name = value;} 
-        //}
 
 
         public void OnPropertyChanged(string PropertyName)
