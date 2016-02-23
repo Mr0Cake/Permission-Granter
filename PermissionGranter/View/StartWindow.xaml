@@ -2,22 +2,34 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
-        Title="StartWindow" Height="600" Width="800">
+        Title="StartWindow" Height="600" Width="800"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}">
     <Window.Resources>
         
     </Window.Resources>
     <DockPanel>
-        <Menu DockPanel.Dock="Top" ItemsSource="{Binding MenuItems}">
+        <Menu Name="mnu" DockPanel.Dock="Top" ItemsSource="{Binding createUserItems}">
+            <Menu.ItemContainerStyle>
+                <Style TargetType="{x:Type MenuItem}">
+                    <!--<Setter Property="Command" Value="{Binding Command}" />-->
+                    
+                    <EventSetter Event="Click" Handler="item_Click"/>
+                </Style>
+            </Menu.ItemContainerStyle>
             <Menu.ItemTemplate>
                 <HierarchicalDataTemplate DataType="{x:Type viewModel:CustTreeItems}" ItemsSource="{Binding Items}">
-                    <TextBlock Margin="1" Text="{Binding Name}"/>
-                    <HierarchicalDataTemplate.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Margin="1" Text="{Binding Name}"/>
-                        </DataTemplate>
-                    </HierarchicalDataTemplate.ItemTemplate>
+                    
+                    <TextBlock Text="{Binding Name}" MouseDown="item_Click"/>
                 </HierarchicalDataTemplate>
             </Menu.ItemTemplate>
         </Menu>
+        <StackPanel Name="spButtons" DockPanel.Dock="Left" Width="100">
+            
+        </StackPanel>
+        <DockPanel Name="spAction">
+            <Label DockPanel.Dock="Top" Content="{Binding ItemName}" FontSize="20"/>
+            <TextBlock Name="txtCommand" Text="{Binding Description}"/>
+        </DockPanel>
+        
     </DockPanel>
 </Window>

@@ -68,3 +68,15 @@ C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\Perm
 C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\PermissionGranter.csproj.GenerateResource.Cache
 C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\PermissionGranter.exe
 C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\PermissionGranter.pdb
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\obj\Debug\PermissionGranter.csprojResolveAssemblyReference.cache
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\System.Windows.Interactivity.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\de\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\en\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\es\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\fr\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\it\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\ja\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\ko\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\ru\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\zh-Hans\System.Windows.Interactivity.resources.dll
+C:\Users\Cake\Dropbox\Github\Permission-Granter\PermissionGranter\bin\Debug\zh-Hant\System.Windows.Interactivity.resources.dll

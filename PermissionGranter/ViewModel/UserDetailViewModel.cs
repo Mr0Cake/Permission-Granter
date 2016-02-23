@@ -11,174 +11,57 @@ using PermissionGranter.ViewModel.Utility;
 using System.Collections.ObjectModel;
 using PermissionGranter.ViewModel.BLL;
 using System.Windows;
+using PermissionGranter.ViewModel.Extensions;
 
 namespace PermissionGranter.ViewModel
 {
-    public class UserDetailViewModel:NotifyPropertyChangedBase
+    public class UserDetailViewModel:TreeViewViewModelBase
     {
-        public ICommand SaveComand { get; set; }
-        public ICommand RemoveUser { get; set; }
-        public ICommand CancelCommand { get; set; }
-        public ICommand DeleteGroup { get; set; }
-        public ICommand AddGroup { get; set; }
-        public ICommand NewUser { get; set; }
-        public ICommand CopyCommand { get; set; }
-        public ICommand PasteCommand { get; set; }
 
-        Dictionary<User, List<Action>> DatabaseSaveTasks = new Dictionary<User, List<Action>>();
-
-        private void AddTask(User s, Action a)
-        {
-            if (!DatabaseSaveTasks.ContainsKey(s))
-            {
-                DatabaseSaveTasks.Add(s, new List<Action>());
-            }
-            DatabaseSaveTasks[s].Add(a);
-        }
-
-        private User _SelectedUser;
-
-        public MenuItems UserPermissions { get; set; }
-
-        public List<UserGroup> UserGroups { get; set; }
-
-        private MenuItems _CompleteMenu;
-
-        public MenuItems CompleteMenu
-        {
-            get
-            {
-                if(_CompleteMenu == null)
-                {
-                    _CompleteMenu = PermissionsBLL.GetTreeMenu();
-                }
-                return _CompleteMenu;
-            }
-            set { _CompleteMenu = value; OnPropertyChanged("CompleteMenu"); }
-        }
-
-        private ObservableCollection<User> _AllUsers;
-
-        public ObservableCollection<User> AllUsers
-        {
-            get {
-                _AllUsers = _AllUsers ?? new ObservableCollection<User>();
-                //BackupList = new List<Memento<User>>();
-                UserBLL.AllUsers().ForEach(
-                    user => 
-                            {
-                                _AllUsers.Add(user);
-                                //BackupList.Add(new Memento<User>(user));
-                            });
-                return _AllUsers; }
-            set
-            {
-                if (_AllUsers == value)
-                    return;
-
-                _AllUsers = value;
-                OnPropertyChanged("AllUsers");
-            }
-        }
-
-
-        public User SelectedUser
-        {
-            get { return _SelectedUser; }
-            set
-            {
-                if (_SelectedUser == value)
-                    return;
-
-                //give the previous user permissions
-                if(_SelectedUser != null)
-                {
-                    _SelectedUser.OwnedPermissions.AllowPermissions.Clear();
-                    _SelectedUser.OwnedPermissions.DenyPermissions.Clear();
-                    PermissionsTreeViewAdapter.FillPermissions(_SelectedUser, CompleteMenu);
-                }
-
-
-                _SelectedUser = value;
-                if (value != null)
-                {
-                    
-                    CompleteMenu.ClearItems();
-                    PermissionsTreeViewAdapter.FillMenuItems(CompleteMenu, value);
-                }
-                OnPropertyChanged("SelectedUser");
-            }
-        }
-
-        //public Memento<User> BackupUser { get; set; }
-        //public List<Memento<User>> BackupList { get; set; }
-        
         public UserDetailViewModel()
         {
-            UserGroups = BLL.GroupBLL.AllGroups;
-            SaveComand = new CustomCommand(SaveUsers, CanSaveUser);
-            RemoveUser = new CustomCommand(DeleteUser, CanDeleteUser);
-            CancelCommand = new CustomCommand(RollBackUser, CanCancel);
-            DeleteGroup = new CustomCommand(DeleteUserFromGroup, CanDeleteGroup);
-            AddGroup = new CustomCommand(AddUserToGroup, CanAdd);
-            NewUser = new CustomCommand(CreateUser, (object o) => { return true; });
-            Messenger.Default.Register<GroupChanged>(this, GroupsChanged);
-            PasteCommand = new CustomCommand(PasteGroupDetails, CanPaste);
-            CopyCommand = new CustomCommand(CopyGroupDetails, (obj) => { return SelectedUser != null; });
+            
+            
+            NewItemCommand = new CustomCommand(CreateItem, CanCreate);
+            RemoveItemCommand = new CustomCommand(RemoveItem, CanRemoveItem);
+
+            CancelCommand = new CustomCommand(CancelChanges, CanCancel);
+            SaveCommand = new CustomCommand(SaveItem, CanSaveItem);
+
+            RemoveUserFromGroupCommand = new CustomCommand(DeleteUserFromGroup, CanDeleteGroup);
+            AddUserToGroupCommand = new CustomCommand(AddUserToGroup, CanAdd);
+            
+            PasteCommand = new CustomCommand(PasteItemDetails, CanPaste);
+            CopyCommand = new CustomCommand(CopyItemDetails, CanCopy);
+            WindowClosingCommand = new CustomCommand(CancelChanges, CanCancel);
             Messenger.Default.Register<Memento<PermissionsBase>>(this, CopyReceived);
+
+            Messenger.Default.Register<GroupChanged>(this, GroupsChanged);
+            
         }
 
-        private void CopyGroupDetails(object obj)
-        {
-            Messenger.Default.Send(new Memento<PermissionsBase>(SelectedGroup));
-        }
 
-        private bool _CanPaste = false;
-        private bool CanPaste(object obj)
+        protected override void CancelChanges(object obj)
         {
-            return _CanPaste;
-        }
-
-        public Memento<PermissionsBase> CopyUser { get; set; }
-        private void CopyReceived(Memento<PermissionsBase> obj)
-        {
-            CopyUser = obj;
-            _CanPaste = SelectedUser!=null;
-        }
-
-        private void PasteGroupDetails(object obj)
-        {
-            SelectedUser.OwnedPermissions = CopyUser.SavedCopy.OwnedPermissions;
-        }
-
-        private List<User> NewUsers = new List<User>();
-
-        private void CreateUser(object obj)
-        {
-            User u = new User();
-            AllUsers.Add(u);
-            NewUsers.Add(u);
-            SelectedUser = u;
-            DatabaseSaveTasks.Add(u, new List<Action> { new Action(() => UserBLL.CreateUser(u)) });
+            base.CancelChanges(obj);
+            UserGroups.Clear();
+            SelectedGroup = null;
+            ToAdd = null;
         }
 
         private bool CanAdd(object obj)
         {
-            if(ToAdd != null)
-            {
-                return true;
-            }
-            return false;
+            return ToAdd != null && !UserGroups.FindFirst(x => x.ID == ToAdd.ID) && SelectedItem != null;
         }
 
         private void AddUserToGroup(object obj)
         {
-            if (!SelectedUser.UserGroupPermissions.Contains(ToAdd))
+            if(SelectedItem != null && ToAdd != null)
             {
-                SelectedUser.UserGroupPermissions.Add(ToAdd);
-                AddTask(SelectedUser,() => BLL.UserBLL.AddUserToGroup(SelectedUser, SelectedGroup));
+                AddUserToGroup(SelectedItem as User, ToAdd);
+                UserGroups.Add(ToAdd);
+                //AllItems[AllItems.IndexOf(SelectedItem)].Changed = true;
             }
-
         }
 
         private UserGroup _ToAdd;
@@ -226,13 +109,8 @@ namespace PermissionGranter.ViewModel
 
         private void DeleteUserFromGroup(object obj)
         {
-            SelectedUser.UserGroupPermissions.Remove(SelectedGroup);
-            if (!NewUsers.Contains(SelectedUser))
-            {
-                AddTask(SelectedUser, () => BLL.UserBLL.DeleteUserFromGroup(SelectedUser, SelectedGroup));
-            }
-            
-            
+            RemoveUserFromGroup(SelectedItem as User, SelectedGroup);
+            UserGroups.Remove(SelectedGroup);
             SelectedGroup = null;
         }
 
@@ -259,31 +137,65 @@ namespace PermissionGranter.ViewModel
             set { _AllGroups = value; }
         }
 
+        private ObservableCollection<UserGroup> _UserGroups;
 
-        private void SelectedUserChanged(User obj)
+        public ObservableCollection<UserGroup> UserGroups
         {
-            SelectedUser = obj;
+            get
+            {
+                if (_UserGroups == null)
+                    _UserGroups = new ObservableCollection<UserGroup>();
+                return _UserGroups;
+            }
+            set
+            {
+                if (_UserGroups == value)
+                    return;
+
+                _UserGroups = value;
+                OnPropertyChanged("UserGroups");
+            }
         }
 
-        private bool _CanCancel = true;
 
-        public bool CanCancelUser
+        public override PermissionsBase SelectedItem
         {
-            get { return _CanCancel; }
-            set { _CanCancel = value; }
+            get { return base.SelectedItem; }
+            set
+            {
+                if (base.SelectedItem == value || value == null)
+                    return;
+
+                base.SelectedItem = value;
+
+                UserGroups.Clear();
+                User ug = SelectedItem as User;
+                //Check if User has no groups
+                if (ug.UserGroupPermissions == null || (ug.UserGroupPermissions != null && ug.UserGroupPermissions.Count == 0))
+                {
+                    //Check in database if user has groups
+                    //Make sure you only do this the fist time
+                    if (ug.ID > 0 && !ug.CheckedInDatabase)
+                    {
+                        List<UserGroup> dbGroups = GroupBLL.GetGroupsByUserID(ug.ID);
+                        //Compare ID of dbgroups with allgroups and then add the UserGroup in AllGroups to UserGroups.
+                        //Equals Method is only using GUID and I need the GUID that has been generated in allgroups.
+                        AllGroups.Where(x => dbGroups.FindFirst(z => z.ID == x.ID)).ToList().ForEach(p => UserGroups.Add(p));
+                        ug.CheckedInDatabase = true;
+                    }
+                    //if above statement is false the user probably doesn't have a usergroup assigned
+                }
+                else
+                {
+                    //the User has usergrouppermissions and they should have the same GUID as in AllGroups
+                    ug.UserGroupPermissions.Where(x => AllGroups.FindFirst(z => z.ID == x.ID)).ToList().ForEach(z => UserGroups.Add(z));
+                }
+
+                OnPropertyChanged("UserGroups");
+            }
         }
 
-
-        private bool CanCancel(object obj)
-        {
-            return CanCancelUser;
-        }
-
-        private void RollBackUser(object obj)
-        {
-            DatabaseSaveTasks.Clear();
-            Close();
-        }
+        
 
         private bool _CanSave = true;
 
@@ -299,47 +211,91 @@ namespace PermissionGranter.ViewModel
             return CanSave;
         }
 
-        private void SaveUsers(object obj)
+        protected override void SaveItem(object obj)
         {
-            bool errors = false;
-            foreach(User u in AllUsers)
+            base.SaveItem(obj);
+            List<User> AllUserGroupItems = AllItems.Cast<User>().ToList();
+            if (AllItems.FindFirst(x => x.Changed || x.OwnedPermissions.Changed))
             {
-                if (!u.IsCorrect)
+                if (AllItems.FindFirst(x => !x.IsCorrect))
                 {
-                    errors = true;
-                    break;
-                }
-            }
-            if (!errors)
-            {
-                DatabaseSaveTasks.ToList().ForEach(x => x.Value.ForEach(z => Task.Factory.StartNew(z)));
-                BLL.UserBLL.UpdateUser(SelectedUser);
-                Messenger.Default.Send<UsersUpdated>(new UsersUpdated());
-            }
-            else
-            {
-                if((MessageBox.Show("U heeft enkele gebruikers niet correct ingevuld, als u op OK klikt worden deze gebruikers niet opgeslagen.", "Fout", MessageBoxButton.OKCancel)
-                ) == MessageBoxResult.OK)
-                {
-                    
-                    foreach(var a in DatabaseSaveTasks)
+                    if (MessageBox.Show("U heeft enkele gebruikers niet correct ingevuld, klik op ok om de foutieve gebruikers niet op te slaan, op annuleren om deze te verbeteren.", "Fout", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                     {
-                        if (a.Key.IsCorrect)
+
+                        foreach (User ug in AllUserGroupItems)
                         {
-                            if (!NewUsers.Contains(a.Key))
+                            if (!ug.IsCorrect)
                             {
-                                a.Value.ForEach(x => Task.Factory.StartNew(x));
+                                //remove database actions
+                                dbActions.Cancel(ug);
+                                dbActions.removeUserGroupAction(ug);
+                                //remove user from groups
+                                AllGroups.ToList().Where(x => ug.UserGroupPermissions.Contains(x)).ToList().ForEach(z => z.GroupUsers.Remove(ug));
+                                //check new item
+                                if (ug.ID == -1)
+                                {
+                                    //remove item
+                                    AllItems.Remove(ug);
+                                }
+                                //item has id, undo changes
+                                else
+                                {
+                                    User OldUser = _AllItemsBackup.Find(x => x.SavedCopy.Equals(ug)).SavedCopy as User;
+                                    if (OldUser != null && OldUser.ID != -1)
+                                    {
+                                        //replace item
+                                        AllItems[AllItems.IndexOf(ug)] = OldUser;
+                                    }
+                                    else
+                                    {
+                                        AllItems.Remove(ug);
+                                    }
+                                }
                             }
                             else
                             {
-                                UserBLL.CreateUser(a.Key);
-                                a.Value.ForEach(x => Task.Factory.StartNew(x));
+                                if (ug.Changed && ug.ID != -1)
+                                    UserBLL.UpdateUser(ug);
                             }
                         }
+                        dbActions.Execute();
+                        SavePermissions();
                     }
                 }
+                else
+                {
+                    AllUserGroupItems.Where(x => x.Changed || x.ID == -1).ToList().ForEach(p => BLL.UserBLL.UpdateUser(p));
+                    dbActions.Execute(AllItems.ToList());
+                    SavePermissions();
+                }
+                MessageBox.Show("Opgeslagen.", "Opgeslagen", MessageBoxButton.OK);
+
+                Task.Factory.StartNew(() =>
+                {
+                    foreach(User u in AllUserGroupItems.Where(x => x.OwnedPermissions.Changed))
+                    {
+                        User old = _AllItemsBackup.Where(x => x.SavedCopy.Equals(u)).First().SavedCopy as User;
+                        dbActions.ChangesToPermission(old, u);
+                    }
+
+                    foreach(var p in dbActions.NotificationMail)
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        p.Value.ForEach(s => sb.AppendLine(s));
+                        SendMail.Mail(p.Key.Email, sb.ToString());
+                    }
+
+
+                    AllItems.ToList().ForEach(x => { x.Changed = false; x.OwnedPermissions.Changed = false; });
+                });
+
+
             }
-            
+            else
+            {
+                MessageBox.Show("Er is niets veranderd.", "Geen verandering", MessageBoxButton.OK);
+            }
+
         }
 
         private bool _CanDelete = true;
@@ -355,21 +311,7 @@ namespace PermissionGranter.ViewModel
         {
             return CanDelete;
         }
-
-        private void DeleteUser(object obj)
-        {
-            if (!NewUsers.Contains(SelectedUser))
-            {
-
-                BLL.UserBLL.DeleteUser(SelectedUser);
-            }
-            else
-            {
-                NewUsers.Remove(SelectedUser);
-            }
-            AllUsers.Remove(SelectedUser);
-            SelectedUser = null;
-        }
+        
 
         private void Close()
         {

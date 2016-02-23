@@ -127,7 +127,7 @@ namespace PermissionGranter
         {
             User u = selectedItem as User;
             spButtons.Children.Clear();
-            string type = "Word";
+            //string type = "Word";
             //MessageBox.Show("cleared");
             foreach (string s in u.UserCalculatedPermission["Word"])
             {

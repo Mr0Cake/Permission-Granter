@@ -10,6 +10,16 @@ namespace PermissionGranter.ViewModel.BLL
 {
     public class GroupBLL
     {
+        //public static List<UserGroup> GetGroupsByDummyUserID(int id)
+        //{
+        //    IList<UserGroup> groups = DAL.DAL.ExecuteDataReader("S_UserGroupsByUserID", FillGroup, DAL.DAL.Parameter("UserID", id));
+        //    foreach (UserGroup ug in groups)
+        //    {
+        //        ug.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(ug.DummyUser);
+        //    }
+        //    return groups.ToList();
+        //}
+
         public static List<UserGroup> GetGroupsByUserID(int id)
         {
             IList<UserGroup> groups = DAL.DAL.ExecuteDataReader("S_UserGroupsByUserID", FillGroup, DAL.DAL.Parameter("UserID", id));
@@ -18,6 +28,12 @@ namespace PermissionGranter.ViewModel.BLL
                 ug.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(ug.DummyUser);
             }
             return groups.ToList();
+        }
+
+        public static List<int> GetUsersByGroupID(int id)
+        {
+            IList<int> users = DAL.DAL.ExecuteDataReader("S_Users_ByGroupID", ((System.Data.IDataReader ir) => { return ir.GetInt32(0); }), DAL.DAL.Parameter("GroupID", id));
+            return users.ToList();
         }
 
         public static void CreateUserGroup(UserGroup u)
@@ -33,13 +49,15 @@ namespace PermissionGranter.ViewModel.BLL
                                         DAL.DAL.Identity()).First();
 
                 //fillpermissions
-
-                UserBLL.PermissionsListToDatabase(dummyUserID, u.OwnedPermissions.AllowPermissions, true);
-                UserBLL.PermissionsListToDatabase(dummyUserID, u.OwnedPermissions.DenyPermissions, false);
+                
+                //UserBLL.PermissionsListToDatabase(dummyUserID, u.OwnedPermissions.AllowPermissions, true);
+                //UserBLL.PermissionsListToDatabase(dummyUserID, u.OwnedPermissions.DenyPermissions, false);
 
                 if (ID != DBNull.Value && ID != null)
                 {
                     u.GroupID = (int)ID;
+                    u.DummyUser = dummyUserID;
+                    PermissionsBLL.AddPermissions(u);
                 }
                 else
                 {
@@ -49,13 +67,24 @@ namespace PermissionGranter.ViewModel.BLL
 
         }
 
+        /// <summary>
+        /// updates the usergroup u to the new values, creates new Usergroup if GroupID == -1
+        /// Does not replace the permissions.
+        /// </summary>
+        /// <param name="u"></param>
         public static void EditUserGroup(UserGroup u)
         {
-            DAL.DAL.ExecuteNonQuery("U_UserGroup",
-                                    DAL.DAL.Parameter("GroupID", u.GroupID), DAL.DAL.Parameter("GroupName", u.GroupName),
-                                    DAL.DAL.Parameter("UserID", u.DummyUser), DAL.DAL.Parameter("Description", u.Description));
-            PermissionsBLL.CompareChangesAndUpdate(u.OwnedPermissions, u);
-
+            if (u.GroupID != -1)
+            {
+                DAL.DAL.ExecuteNonQuery("U_UserGroup",
+                                        DAL.DAL.Parameter("GroupID", u.GroupID), DAL.DAL.Parameter("GroupName", u.GroupName),
+                                        DAL.DAL.Parameter("UserID", u.DummyUser), DAL.DAL.Parameter("Description", u.Description));
+                PermissionsBLL.ReplacePermissions(u);
+            }
+            else
+            {
+                CreateUserGroup(u);
+            }
         }
 
         private static List<UserGroup> _AllGroups;
@@ -77,10 +106,8 @@ namespace PermissionGranter.ViewModel.BLL
         public static List<UserGroup> GetAllGroups()
         {
             IList<UserGroup> groups = DAL.DAL.ExecuteDataReader("S_AllUserGroups", FillGroup);
-            foreach(UserGroup g in groups)
-            {
-                g.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(g.DummyUser);
-            }
+            groups.ToList().ForEach(x => x.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(x.DummyUser));
+            
             return groups.ToList();
         }
 

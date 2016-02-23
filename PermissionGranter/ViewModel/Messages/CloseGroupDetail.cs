@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace PermissionGranter.ViewModel.Messages
 {
-    public class CloseGroupDetail
+    public class CloseGroupDetail:DetailBase
     {
     }
 }

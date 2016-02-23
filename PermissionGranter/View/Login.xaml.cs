@@ -31,64 +31,25 @@ namespace PermissionGranter.View
             InitializeComponent();
         }
 
-        private void BtnLogin_Click(object sender, RoutedEventArgs e)
-        {
-            string email = TxtEmail.Text;
-            User loggedUser;
-            bool loginsucceeded = ViewModel.BLL.UserBLL.ComparePasswords(out loggedUser,TxtPassword.Password, email);
-            if (!loginsucceeded) MessageBox.Show("Wachtwoord klopt niet voor gebruiker");
-            if (loginsucceeded)
-            {
-                Messenger.Default.Send<DoLogin>(new DoLogin(loggedUser));
-            }
-            
-        }
-
-        private User _LoginUser;
-
-        public User LoginUser
-        {
-            get { return _LoginUser; }
-            set
-            {
-                if (_LoginUser == value)
-                    return;
-
-                _LoginUser = value;
-            }
-        }
-
-        private void btnCancel_Click(object sender, RoutedEventArgs e)
-        {
-            Messenger.Default.Send<CloseApplication>(new CloseApplication());
-        }
+        
 
         private void btnCreate_Click(object sender, RoutedEventArgs e)
         {
-            string email = TxtEmail.Text;
-            User u = new User();
-            u.Email = email;
-            string password = TxtPassword.Password;
-            string salt;
-            int iterations = 10;
-            ViewModel.PasswordEncryption.EncryptPassword(ref password, iterations, out salt);
-            u.Password = password;
+            //string email = TxtEmail.Text;
+            //User u = new User();
+            //u.Email = email;
+            //string password = TxtPassword.Password;
+            //string salt;
+            //int iterations = 10;
+            //ViewModel.PasswordEncryption.EncryptPassword(ref password, iterations, out salt);
+            //u.Password = password;
 
-            ViewModel.BLL.UserBLL.CreateUser(u);
-            _LoginUser = u;
-            this.DialogResult = true;
-            this.Close();
+            //ViewModel.BLL.UserBLL.CreateUser(u);
+            //_LoginUser = u;
+            //this.DialogResult = true;
+            //this.Close();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            Messenger.Default.Send<CloseApplication>(new CloseApplication());
-        }
-
-        private void Window_Closed(object sender, EventArgs e)
-        {
-            Messenger.Default.Send<CloseApplication>(new CloseApplication());
-
-        }
+        
     }
 }

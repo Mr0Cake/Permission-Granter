@@ -32,7 +32,8 @@ namespace PermissionGranter.ViewModel.BLL
                 int returnvalue;
                 user = DAL.DAL.ExecuteDataReader("S_User",FillUser, out returnvalue,userID.SetParameter("UserID")).FirstOrDefault();
                 user.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(userID);
-                user.UserGroupPermissions = GroupBLL.GetGroupsByUserID(userID);
+                foreach(UserGroup u in GroupBLL.GetGroupsByUserID(userID))
+                    user.UserGroupPermissions.Add(u);
             }
             catch (Exception)
             {
@@ -56,12 +57,9 @@ namespace PermissionGranter.ViewModel.BLL
                 int UserID = (int)outputParams[0];
                 AddUser.UserID = UserID;
                 //CreatePermissions
-                // - allow: als een gebruiker allow permissies heeft dan worden parent controls automatisch aangevinkt.
-                PermissionsListToDatabase(UserID, AddUser.OwnedPermissions.AllowPermissions, true);
-                // - Deny: deny kan ook op een venster zijn, deny wordt niet doorgegeven aan de parent
-                PermissionsListToDatabase(UserID, AddUser.OwnedPermissions.DenyPermissions, false);
+                PermissionsBLL.AddPermissions(AddUser);
                 //setgroups
-                foreach(UserGroup ug in AddUser.UserGroupPermissions)
+                foreach (UserGroup ug in AddUser.UserGroupPermissions)
                 {
                     if (ug.GroupID > -1)
                     {
@@ -101,12 +99,33 @@ namespace PermissionGranter.ViewModel.BLL
         {
             if(u.UserID > -1)
             {
-                DAL.DAL.ExecuteNonQuery("U_User", DAL.DAL.Parameter("UserID", u.UserID));
-                PermissionsBLL.CompareChangesAndUpdate(u.OwnedPermissions, u);
+                DAL.DAL.ExecuteNonQuery("U_User",
+                                DAL.DAL.Parameter("Email", u.Email),
+                                DAL.DAL.Parameter("FirstName", u.FirstName),
+                                DAL.DAL.Parameter("LastName", u.LastName),
+                                DAL.DAL.Parameter("UserID", u.UserID)
+                    );
+                PermissionsBLL.ReplacePermissions(u);
+                if (u.PasswordChanged)
+                {
+                    UpdatePassword(u);
+                }
             }
             else
             {
                 CreateUser(u);
+            }
+        }
+
+        public static void UpdatePassword(User u)
+        {
+            if (u.UserID > -1)
+            {
+                DAL.DAL.ExecuteNonQuery("U_User_ChangePasswordHash",
+                    DAL.DAL.Parameter("@UserID", u.ID),
+                    DAL.DAL.Parameter("@Hash", u.Password),
+                    DAL.DAL.Parameter("@Salt", u.Salt),
+                    DAL.DAL.Parameter("@IterationCount", 10));
             }
         }
 
@@ -117,7 +136,9 @@ namespace PermissionGranter.ViewModel.BLL
                                 DAL.DAL.Parameter("Email", addUser.Email),
                                 DAL.DAL.Parameter("FirstName", addUser.FirstName),
                                 DAL.DAL.Parameter("LastName", addUser.LastName),
-                                DAL.DAL.Parameter("Password", addUser.Password)
+                                DAL.DAL.Parameter("Hash", addUser.Password),
+                                DAL.DAL.Parameter("Salt", addUser.Salt),
+                                DAL.DAL.Parameter("IterationCount", 10)
                             };
 
             return parameters;
@@ -128,13 +149,12 @@ namespace PermissionGranter.ViewModel.BLL
             //retrieve hash, salt, count
             //DAL.Parameter("Email", email)
             int errorCode;
-            int returnvalue = 0;
             loggedUser = null;
-            HashSaltCount hash;
+            User hash;
             try
             {
-                hash = DAL.DAL.ExecuteDataReader("S_User_PasswordHash", FillStruct, out errorCode,
-                DAL.DAL.Parameter("Email", email), DAL.DAL.Parameter("@Returnvalue", returnvalue))[0];
+                hash = DAL.DAL.ExecuteDataReader("S_User_PasswordHash", FillUser, out errorCode,
+                DAL.DAL.Parameter("Email", email)).First();
             }
             catch (IndexOutOfRangeException)
             {
@@ -144,42 +164,20 @@ namespace PermissionGranter.ViewModel.BLL
             {
                 return false;
             }
-
-            if (PasswordEncryption.PasswordMatch(password, hash.Hash, hash.Salt, hash.count))
+            if(PasswordEncryption.PasswordMatch(password, hash.Password, hash.Salt, 10))
             {
-                //GetUser
-                loggedUser = DAL.DAL.ExecuteDataReader("S_User_ByMail", FillUser, out errorCode, DAL.DAL.Parameter("Email", email))[0];
-
-                //UserPermissions
-                IList<UserControlPermission> controlPermissions = DAL.DAL.ExecuteDataReader("S_User_ControlPermissions", PermissionsBLL.FillUserControlPermission, out errorCode,
-                    DAL.DAL.Parameter("UserID", loggedUser.UserID));
-                //Executable actions
-                IList<UserPermission> permissions = DAL.DAL.ExecuteDataReader("S_User_Permissions", PermissionsBLL.FillUserPermission, out errorCode,
-                    DAL.DAL.Parameter("UserID", loggedUser.UserID));
-
-                if (permissions.Count > 0)
-                {
-                    //Permission heeft altijd een control, zonder permissie geen access en geen notie
-                    //getpermissions true = allow false = deny
-                    foreach (UserControlPermission perm in controlPermissions)
-                        loggedUser.OwnedPermissions.addPermission(perm.Control, perm.AccessValue);
-                    foreach (UserPermission perm in permissions)
-                        loggedUser.OwnedPermissions.addPermission(perm.Control, perm.AccessValue, perm.Permission);
-
-                    //getGroups
-                }
-                loggedUser.Email = email;
-
+                loggedUser = hash;
                 return true;
             }
+            
             return false;
         }
         
 
         /// <summary>
         /// Send a permission dictionary of a user to the database
-        /// In case of a deny permission: no permissions -> block the control
-        ///                                 permissions > 0 -> block only the permissions
+        /// In case of a deny permission: no permissions -> block/allow the control
+        ///                                 permissions > 0 -> block/allow only the permissions
         /// </summary>
         /// <param name="UserID">int userid</param>
         /// <param name="inputPermissions">list of permissions</param>
@@ -195,11 +193,12 @@ namespace PermissionGranter.ViewModel.BLL
                 string controlName = e.Key;
                 SqlParameter control = DAL.DAL.Parameter("ControlName", e.Key);
                 DAL.DAL.ExecuteNonQuery("I_User_ControlPermission", user, control, allowordeny);
-                if (e.Value.Count > 0 && AllowOrDeny)
+                SqlParameter perm;
+                if (e.Value != null && e.Value.Count > 0)
                 {
                     foreach (string permission in e.Value)
                     {
-                        SqlParameter perm = DAL.DAL.Parameter("Permission", permission);
+                        perm = DAL.DAL.Parameter("Permission", permission);
                         DAL.DAL.ExecuteNonQuery("I_User_Permission", user, control, perm, allowordeny);
                     }
                 }
@@ -287,7 +286,9 @@ namespace PermissionGranter.ViewModel.BLL
             int errorCode;
             User u = DAL.DAL.ExecuteDataReader("S_User", FillUser, out errorCode, DAL.DAL.Parameter("Email", email))[0];
             u.OwnedPermissions = PermissionsBLL.GetPermissionsByUserID(u.UserID);
-            u.UserGroupPermissions = GroupBLL.GetGroupsByUserID(u.UserID);
+            if(u.ID > -1)
+            foreach (UserGroup ug in GroupBLL.GetGroupsByUserID(u.ID))
+                u.UserGroupPermissions.Add(ug);
             return u;
         }
 
@@ -298,14 +299,17 @@ namespace PermissionGranter.ViewModel.BLL
             u.UserID = sq.GetInt32(0);
             u.FirstName = sq.IsDBNull(1) ? "" : sq.GetString(1);
             u.LastName = sq.IsDBNull(2) ? "" : sq.GetString(2);
-            u.Password = sq.IsDBNull(3) ? "" : sq.GetString(3);
-
+            u.Email = sq.IsDBNull(3) ? "" : sq.GetString(3);
+            u.SetPassword(sq.IsDBNull(4) ? "" : sq.GetString(4));
+            u.Salt = sq.IsDBNull(5) ? "" : sq.GetString(5);
             return u;
         }
 
         public static List<User> AllUsers()
         {
-            return DAL.DAL.ExecuteDataReader("S_AllUsers", FillUser).ToList();
+            IList<User> users =  DAL.DAL.ExecuteDataReader("S_AllUsers", FillUser).ToList();
+            users.ToList().ForEach(x => x.OwnedPermissions=PermissionsBLL.GetPermissionsByUserID(x.ID));
+            return users.ToList();
         }
     }
 }

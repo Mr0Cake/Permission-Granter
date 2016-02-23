@@ -22,7 +22,7 @@ namespace PermissionGranter.ViewModel.Services
             get { return _GroupDetailViewModel; }
         }
 
-        private static Session _UserSession;
+        private static Session _UserSession = new Session();
 
         public static Session UserSession
         {

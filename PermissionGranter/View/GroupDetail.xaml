@@ -7,7 +7,13 @@
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
         mc:Ignorable="d"
         Title="GroupDetail" Height="465" Width="600"
-        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=GroupDetails}">
+        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=GroupDetails}"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding WindowClosingCommand}" CommandParameter="{Binding}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -19,14 +25,14 @@
             </StackPanel >
 
             <Label Margin="5,0,0,0">Groepnaam:</Label>
-            <TextBox Name="txtGroepnaam" Text="{Binding ElementName=lstGroups, Path=SelectedItem.GroupName, Mode=TwoWay}" MaxLength="50" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtGroepnaam" Text="{Binding ElementName=lstGroups, Path=SelectedItem.GroupName, Mode=TwoWay}" IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}" MaxLength="50" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
             <Label Margin="5,0,0,0">Omschrijving:</Label>
-            <TextBox Name="txtOmschrijving" Text="{Binding ElementName=lstGroups, Path=SelectedItem.Description, Mode=TwoWay}" MaxLength="250" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtOmschrijving" Text="{Binding ElementName=lstGroups, Path=SelectedItem.Description, Mode=TwoWay}" IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}" MaxLength="250" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
 
 
             <Label Margin="5,0,0,0">Groepen:</Label>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ListBox Name="lstGroups" ItemsSource="{Binding AllGroups}" SelectedItem="{Binding SelectedGroup}" Height="90" 
+                <ListBox Name="lstGroups" ItemsSource="{Binding AllItems}" SelectedItem="{Binding SelectedItem}" Height="90" 
                     ItemContainerStyle="{StaticResource ValidationStyle}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
@@ -38,22 +44,22 @@
             </ScrollViewer>
             
             <DockPanel  Margin="0,2,2,0" Width="{Binding ElementName=spUserInfo, Path=ActualWidth-2}">
-                <Button Name="btnAddGroup" Command="{Binding AddGroup}" HorizontalAlignment="Left" 
+                <Button Name="btnAddGroup" Command="{Binding NewItemCommand}" HorizontalAlignment="Left" 
                         FocusManager.FocusedElement="{Binding ElementName=txtGroepnaam}">New</Button>
-                <Button Name="btnRemoveGroup"  Style="{StaticResource ButtonDeleteStyle}" HorizontalAlignment="Right" Command="{Binding RemoveGroup}"  IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Delete</Button>
+                <Button Name="btnRemoveGroup"  Style="{StaticResource ButtonDeleteStyle}" HorizontalAlignment="Right" Command="{Binding RemoveItemCommand}"  IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Delete</Button>
                 
             </DockPanel>
 
             <Label Margin="5,0,0,0">Gebruikers:</Label>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ListBox Name="lstUsers" ItemsSource="{Binding SelectedGroup.GroupUsers}" SelectedItem="{Binding SelectedUser}" Height="90" />
+                <ListBox Name="lstUsers" ItemsSource="{Binding GroupUsers}" SelectedItem="{Binding SelectedUser}" Height="90" />
             </ScrollViewer>
 
             <ComboBox Name="cmbUsers" ItemsSource="{Binding AllUsers}"  SelectedItem="{Binding SelectedAddUser}" Margin="0,5,0,2"></ComboBox>
 
             <DockPanel  Margin="3" Width="{Binding ElementName=spUserInfo, Path=ActualWidth-2}">
-                <Button Name="btnAddUserToGroup" HorizontalAlignment="Left" Command="{Binding AddUserToGroup}" IsEnabled="{Binding ElementName=lstAllGroups, Path=SelectedItems.Count}">Add</Button>
-                <Button Name="btnRemoveUserFromGroup" HorizontalAlignment="Left" Command="{Binding RemoveUserFromGroup}" Style="{StaticResource ButtonDeleteStyle}" IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Remove</Button>
+                <Button Name="btnAddUserToGroup" HorizontalAlignment="Left" Command="{Binding AddUserToGroupCommand}" IsEnabled="{Binding ElementName=lstAllGroups, Path=SelectedItems.Count}">Add</Button>
+                <Button Name="btnRemoveUserFromGroup" HorizontalAlignment="Left" Command="{Binding RemoveUserFromGroupCommand}" Style="{StaticResource ButtonDeleteStyle}" IsEnabled="{Binding ElementName=lstGroups, Path=SelectedItems.Count}">Remove</Button>
 
                 <Button Name="btnSave"  HorizontalAlignment="Left" Command="{Binding SaveCommand}" Style="{StaticResource ButtonStyle}">Save</Button>
 
@@ -70,7 +76,7 @@
                     <TreeView.Resources>
                         <HierarchicalDataTemplate DataType="{x:Type viewModel:CustTreeItems}" ItemsSource="{Binding Items}">
                             <StackPanel Orientation="Horizontal">
-                                <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" />
+                            <CheckBox IsThreeState="True" Margin="1,1,2,1" IsChecked="{Binding HasAccess, Mode=TwoWay}" Style="{StaticResource SimpleCheckBox}" />
                                 <TextBlock Text="{Binding Path=Name}"  FontFamily="{StaticResource TreeViewFont}">
                                     <TextBlock.Style>
                                         <Style>

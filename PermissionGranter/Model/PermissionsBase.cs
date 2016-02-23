@@ -17,21 +17,23 @@ namespace PermissionGranter.Model
         /// <summary>
         /// Permissions die gezet zijn specifiek voor de gebruiker/groep
         /// </summary>
-        public virtual Permissions OwnedPermissions
+        public Permissions OwnedPermissions
         {
             get { return _OwnedPermissions; }
             set
             {
-                NotifyPropertyChanged("OwnedPermissions");
                 _OwnedPermissions = value;
+                NotifyPropertyChanged("OwnedPermissions");
             }
         }
+
+        public virtual int ID { get; }
 
         private bool _Changed;
 
         public virtual bool Changed
         {
-            get { return _Changed && OwnedPermissions.Changed; }
+            get { return _Changed || OwnedPermissions.Changed; }
             set { _Changed = value; }
         }
 
@@ -45,6 +47,35 @@ namespace PermissionGranter.Model
                 Changed = true;
             }
         }
+
+        private bool _CheckedInDatabase = false;
+
+        public bool CheckedInDatabase
+        {
+            get { return _CheckedInDatabase; }
+            set { _CheckedInDatabase = value; }
+        }
+
+        public virtual bool IsCorrect
+        {
+            get;
+        }
+
+        private string _Name;
+
+        public virtual string Name
+        {
+            get { return _Name; }
+            set
+            {
+                if (_Name == value)
+                    return;
+
+                _Name = value;
+                NotifyPropertyChanged("Name");
+            }
+        }
+
 
         public virtual PermissionsBase GetCopy()
         {

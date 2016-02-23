@@ -110,16 +110,11 @@ namespace PermissionGranter.ViewModel.BLL
 
         public static void AddPermissions(PermissionsBase pb)
         {
-            int userid = -1;
-            if (pb is User)
-                userid = (pb as User).UserID;
-            if (pb is UserGroup)
-                userid = (pb as UserGroup).DummyUser;
-            if (userid != -1)
+            if (pb.ID != -1)
             {
 
-                AddPermissionsFromList(userid, pb.OwnedPermissions.AllowPermissions, true);
-                AddPermissionsFromList(userid, pb.OwnedPermissions.DenyPermissions, true);
+                AddPermissionsFromList(pb.ID, pb.OwnedPermissions.AllowPermissions, true);
+                AddPermissionsFromList(pb.ID, pb.OwnedPermissions.DenyPermissions, false);
             }
         }
 
@@ -189,8 +184,6 @@ namespace PermissionGranter.ViewModel.BLL
             List<CustTreeItems> menulist = new List<CustTreeItems>();
             Dictionary<string, CustTreeItems> itemsDictionary = new Dictionary<string, CustTreeItems>();
             Dictionary<string, CustTreeItems> addPermissions = new Dictionary<string, CustTreeItems>();
-            //Dictionary<string, CustTreeItems> toAddParent = new Dictionary<string, CustTreeItems>();
-            //List<Tuple<string, CustTreeItems>> toAddParent = new List<Tuple<string, CustTreeItems>>();
 
             foreach(var t in dbmi)
             {
@@ -330,23 +323,30 @@ namespace PermissionGranter.ViewModel.BLL
 
         public static Permissions GetPermissionsByUserID(int id)
         {
-            Permissions perms = new Permissions();
-            int errorCode;
-            IList<UserControlPermission> controlPermissions = DAL.DAL.ExecuteDataReader("S_User_ControlPermissions", FillUserControlPermission, out errorCode,
-                    DAL.DAL.Parameter("UserID", id));
-            //Executable actions
-            IList<UserPermission> permissions = DAL.DAL.ExecuteDataReader("S_User_Permissions", FillUserPermission, out errorCode,
-                DAL.DAL.Parameter("UserID", id));
-            if (permissions.Count > 0)
+            if (id > -1)
             {
-                //Permission heeft altijd een control, zonder permissie geen access en geen notie
-                //getpermissions true = allow false = deny
-                foreach (UserControlPermission perm in controlPermissions)
-                    perms.addPermission(perm.Control, perm.AccessValue);
-                foreach (UserPermission perm in permissions)
-                    perms.addPermission(perm.Control, perm.AccessValue, perm.Permission);
+                Permissions perms = new Permissions();
+                int errorCode;
+                IList<UserControlPermission> controlPermissions = DAL.DAL.ExecuteDataReader("S_User_ControlPermissions", FillUserControlPermission, out errorCode,
+                        DAL.DAL.Parameter("UserID", id));
+                //Executable actions
+                IList<UserPermission> permissions = DAL.DAL.ExecuteDataReader("S_User_Permissions", FillUserPermission, out errorCode,
+                    DAL.DAL.Parameter("UserID", id));
+                if (permissions.Count > 0)
+                {
+                    //Permission heeft altijd een control, zonder permissie geen access en geen notie
+                    //getpermissions true = allow false = deny
+                    foreach (UserControlPermission perm in controlPermissions)
+                        perms.addPermission(perm.Control, perm.AccessValue);
+                    foreach (UserPermission perm in permissions)
+                        perms.addPermission(perm.Control, perm.AccessValue, perm.Permission);
+                }
+                return perms;
             }
-            return perms;
+            else
+            {
+                throw new Exception("User ID nog niet ingesteld");
+            }
         }
         #endregion
         
@@ -408,9 +408,13 @@ namespace PermissionGranter.ViewModel.BLL
 
         public static UserControlPermission FillUserControlPermission(IDataReader arg)
         {
+            string output = "";
+            output += arg.FieldCount + " ";
+            
+
             UserControlPermission ucp = new UserControlPermission();
             ucp.Control = arg.GetString(0);
-            ucp.AccessValue = arg.GetBoolean(1);
+            ucp.AccessValue = arg.GetByte(1) == (byte)1 ? true : false;
 
             return ucp;
         }
@@ -418,10 +422,12 @@ namespace PermissionGranter.ViewModel.BLL
 
         public static UserPermission FillUserPermission(IDataReader sq)
         {
+            string output = sq.FieldCount.ToString();
             UserPermission perm = new UserPermission();
-            perm.Control = sq.GetString(2);
-            perm.AccessValue = sq.GetByte(3) == (byte)1 ? true : false;
-            perm.Permission = sq.IsDBNull(4) ? "" : sq.GetString(4);
+            perm.Control = sq.GetString(0);
+            perm.AccessValue = sq.GetByte(1) == (byte)1 ? true : false;
+            if (sq.FieldCount > 2)
+            perm.Permission = sq.IsDBNull(2) ? "" : sq.GetString(2);
             return perm;
         }
     }

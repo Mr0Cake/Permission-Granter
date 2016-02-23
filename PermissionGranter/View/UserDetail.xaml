@@ -7,7 +7,13 @@
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
         mc:Ignorable="d"
         Title="UserDetail" Height="554" Width="600"
-        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=UserDetails}">
+        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=UserDetails}"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Closing">
+            <i:InvokeCommandAction Command="{Binding WindowClosingCommand}" CommandParameter="{Binding}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
@@ -19,35 +25,35 @@
             </StackPanel>
 
             <Label Margin="5,0,0,0">Voornaam:</Label>
-            <TextBox Name="txtVoornaam" Text="{Binding SelectedUser.FirstName, Mode=TwoWay}" MaxLength="30" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtVoornaam" Text="{Binding SelectedItem.FirstName, Mode=TwoWay}" MaxLength="30" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
             <Label Margin="5,0,0,0">Achternaam:</Label>
-            <TextBox Name="txtAchternaam" Text="{Binding SelectedUser.LastName, Mode=TwoWay}" MaxLength="30" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtAchternaam" Text="{Binding SelectedItem.LastName, Mode=TwoWay}" MaxLength="30" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
 
             <Label Margin="5,0,0,0">Wachtwoord:</Label>
-            <TextBox Name="txtWachtwoord" Text="{Binding SelectedUser.Password, Mode=TwoWay}" MaxLength="50" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtWachtwoord" Text="{Binding SelectedItem.Password, Mode=TwoWay}" MaxLength="50" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
 
             <Label Margin="5,0,0,0">E-mail:</Label>
-            <TextBox Name="txtEmail" Text="{Binding SelectedUser.Email, Mode=TwoWay}" MaxLength="80" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
+            <TextBox Name="txtEmail" Text="{Binding SelectedItem.Email, Mode=TwoWay}" MaxLength="80" Style="{StaticResource TextBoxPropertyStyle}"></TextBox>
 
             <Label Margin="5,0,0,0">Groepen:</Label>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ListBox Name="lstGroups" ItemsSource="{Binding SelectedUser.UserGroupPermissions}" SelectedItem="{Binding SelectedGroup}" Height="90"/>
+                <ListBox Name="lstGroups" ItemsSource="{Binding UserGroups}" SelectedItem="{Binding SelectedGroup}" Height="90"/>
             </ScrollViewer>
-            <ComboBox Name="lstAllGroups" ItemsSource="{Binding UserGroups}" SelectedItem="{Binding ToAdd, Mode=TwoWay}">
+            <ComboBox Name="lstAllGroups" ItemsSource="{Binding AllGroups}" SelectedItem="{Binding ToAdd}">
                 
             </ComboBox>
             <DockPanel  Margin="3">
-                <Button Name="btnAddGroup" HorizontalAlignment="Left" Command="{Binding AddGroup}" IsEnabled="{Binding ElementName=lstAllGroups, Path=SelectedItems.Count}">Add</Button>
-                <Button Name="btnRemoveGroup" HorizontalAlignment="Right" Command="{Binding RemoveGroup}" Margin="3,0,0,0" IsEnabled="{Binding ElementName=lstAllUsers, Path=SelectedItems.Count}">Remove</Button>
+                <Button Name="btnAddGroup" HorizontalAlignment="Left" Command="{Binding AddUserToGroupCommand}" IsEnabled="{Binding ElementName=lstAllGroups, Path=SelectedItems.Count}">Add</Button>
+                <Button Name="btnRemoveGroup" HorizontalAlignment="Right" Command="{Binding RemoveUserFromGroupCommand}" Margin="3,0,0,0" IsEnabled="{Binding ElementName=lstAllUsers, Path=SelectedItems.Count}">Remove</Button>
                
             </DockPanel>
             <Label Margin="5,0,0,0">Gebruikers:</Label>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <ListBox Name="lstAllUsers" ItemsSource="{Binding AllUsers}" SelectedItem="{Binding SelectedUser}"  Height="90"
+                <ListBox Name="lstAllUsers" ItemsSource="{Binding AllItems}" SelectedItem="{Binding SelectedItem}"  Height="90"
                          ItemContainerStyle="{StaticResource ValidationStyle}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <Label Content="{Binding Output}" />
+                            <Label Content="{Binding Name}" />
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
@@ -56,9 +62,9 @@
 
             <DockPanel  Margin="3,5,3,3" Width="{Binding ElementName=spUserInfo, Path=ActualWidth-2}">
                 <Button Name="btnSave" HorizontalAlignment="Left" Margin="0,0,0,0" Command="{Binding SaveCommand}">Save</Button>
-                <Button Name="btnNew" HorizontalAlignment="Left" Margin="3,0,0,0" Command="{Binding NewUser}" Content="New"
+                <Button Name="btnNew" HorizontalAlignment="Left" Margin="3,0,0,0" Command="{Binding NewItemCommand}" Content="New"
                         FocusManager.FocusedElement="{Binding ElementName=txtVoornaam}"/>
-                <Button Name="btnDelete" HorizontalAlignment="Left" Command="{Binding RemoveUser}" Style="{StaticResource ButtonDeleteStyle}" IsEnabled="{Binding ElementName=lstAllUsers, Path=SelectedItems.Count}">Delete</Button>
+                <Button Name="btnDelete" HorizontalAlignment="Left" Command="{Binding RemoveItemCommand}" Style="{StaticResource ButtonDeleteStyle}" IsEnabled="{Binding ElementName=lstAllUsers, Path=SelectedItems.Count}">Delete</Button>
 
                 <Button Name="btnCancel" HorizontalAlignment="Right"  Margin="3,0,0,0" Command="{Binding CancelCommand}">Cancel</Button>
                 

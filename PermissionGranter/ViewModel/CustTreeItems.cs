@@ -14,7 +14,11 @@ namespace PermissionGranter.ViewModel
 {
     public class CustTreeItems : INotifyPropertyChanged, IEnumerable
     {
-        
+        public override string ToString()
+        {
+            return Name;
+        }
+
         public ICommand Command
         {
             get; set;
@@ -117,6 +121,23 @@ namespace PermissionGranter.ViewModel
                 tempList.Add(this);
             }
         }
+
+        public void RemoveNoPermissions()
+        {
+            if(Items.Count > 0)
+            for (int i = Items.Count - 1; i > -1; i--)
+            {
+                if (Items[i].HasAccess == false || Items[i].HasAccess == null)
+                {
+                    Items.RemoveAt(i);
+                }
+                else
+                {
+                    Items[i].RemoveNoPermissions();
+                }
+            }
+        }
+    
 
         //public bool AddToParent(string parentName)
         //{

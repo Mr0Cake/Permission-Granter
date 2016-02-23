@@ -10,58 +10,62 @@ namespace PermissionGranter.ViewModel
     public static class PermissionsTreeViewAdapter
     {
 
-        private static void AddItems(Dictionary<string, HashSet<string>> permissions, List<CustTreeItems> toFill, bool? permission)
+        private static void AddItems(Dictionary<string, HashSet<string>> permissions, MenuItems mu, bool? permission)
         {
-            IEnumerable<CustTreeItems> relevantItems = toFill.Where(x => permissions.Keys.Contains(x.Name));
+            List<CustTreeItems> relevantItems = mu.GetAllItemReferences().Where(x => permissions.Keys.Contains(x.Name)).ToList();
+            //IEnumerable<CustTreeItems> relevantItems = toFill.Where(x => permissions.Keys.Contains(x.Name));
             foreach (CustTreeItems c in relevantItems)
             {
-                
-                HashSet<string> perms;
+                c.setAccess(permission);
+                    HashSet<string> perms;
                 if ((perms = permissions[c.Name]) != null)
                 {
-                    //perms.ToList().ForEach(options => c.Options.Where(perm => perm.Name == options).ToList().ForEach(perm => perm.setAccess(permission)));
-                    foreach (var p in perms)
+                    if (c.Options.Count == perms.Count && c.Options.All(x => perms.Contains(x.Name)))
                     {
-                        c.Options.Where(option => option.Name == p).First().setAccess(permission);
+                        c.HasAccess = permission;
+                    }
+                    else {
+
+                        foreach (Permission p in c.Options)
+                        {
+                            if (perms.Contains(p.Name))
+                                p.Value = permission;
+                        }
                     }
                 }
-                if (permission != null)
-                {
-                    c.setAccess(permission);
-                }
-                else
-                {
-                    if(c.Options.All(option => option.Value == null))
-                    {
-                        c.setAccess(null);
-                    }
-                }
+                
+                //c.setAccess(permission);
+                
+                
             }
         }
 
+        /// <summary>
+        /// Check off the permissions on a treeview. using the permissions owned by 'u'
+        /// Permissions on the treeview will be cleared before adding.
+        /// </summary>
+        /// <param name="tempItems">MenuItems object to fill</param>
+        /// <param name="u">PermissionsBase object to base the permissions on</param>
         public static void FillMenuItems(MenuItems tempItems, PermissionsBase u)
         {
             tempItems.ClearItems();
-            List<CustTreeItems> items = tempItems.GetAllItemReferences();
-            AddItems(u.OwnedPermissions.AllowPermissions, items, true);
-            AddItems(u.OwnedPermissions.DenyPermissions, items, null);
-
-
-            //set HasAccess if all items are the same
-            //items.Where(x => x.Options != null && x.Options.Count > 0)
-            //    .ToList().Where(y => y.Options.ToList()
-            //        .All(z => y.Options.First().Value == z.Value))
-            //        .ToList().ForEach(p => p.HasAccess = p.Options.First().Value);
-
-            //traceer de permissies terug naar boven (als de items allemaal gelijk zijn dan is hasaccess van
-            //het parent item gelijk)
-            //items.Where(parent => parent.Items.Count>0).Where(z=>z.Items.All(item => item.HasAccess == z.Items.First().HasAccess))
-            //    .ToList().ForEach(item => item.HasAccess = item.Items.First().HasAccess);
-            //items.Where(parent => parent.Items.Count > 0).Where(z => z.Items.All(item => item.HasAccess == z.Items.First().HasAccess))
-            //    .ToList().ForEach(item => item.HasAccess = item.Items.First().HasAccess);
-            //items.Where(parent => parent.Items.Count > 0).Where(z => z.Items.All(item => item.HasAccess == z.Items.First().HasAccess))
-            //    .ToList().ForEach(item => item.HasAccess = item.Items.First().HasAccess);
-            //3 keer omdat ik even geen zin heb in een ingewikkelde functie die terugloopt naar het hoogste niveau
+            //List<CustTreeItems> items = tempItems.GetAllItemReferences();
+            AddItems(u.OwnedPermissions.AllowPermissions, tempItems, true);
+            if(u is User)
+            {
+                foreach(UserGroup ug in (u as User).UserGroupPermissions)
+                {
+                    AddItems(ug.OwnedPermissions.AllowPermissions, tempItems, true);
+                }
+            }
+            AddItems(u.OwnedPermissions.DenyPermissions, tempItems, null);
+            if (u is User)
+            {
+                foreach (UserGroup ug in (u as User).UserGroupPermissions)
+                {
+                    AddItems(ug.OwnedPermissions.DenyPermissions, tempItems, true);
+                }
+            }
         }
 
         public static void FillPermissions(PermissionsBase u, MenuItems tempItems)
@@ -108,14 +112,7 @@ namespace PermissionGranter.ViewModel
                                 u.OwnedPermissions.DenyPermissions.Add(cti.Name, denypermissions);
                             u.OwnedPermissions.DenyPermissions[cti.Name].Add(p.Name);
                         }
-
-                        //if(p.Value == false)
-                        //{
-                        //    if (u.OwnedPermissions.DenyPermissions.ContainsKey(cti.Name))
-                        //        u.OwnedPermissions.DenyPermissions[cti.Name].Remove(p.Name);
-                        //    if (u.OwnedPermissions.AllowPermissions.ContainsKey(cti.Name))
-                        //        u.OwnedPermissions.AllowPermissions[cti.Name].Remove(p.Name);
-                        //}
+                        
                             
                     }
                 }
@@ -131,14 +128,6 @@ namespace PermissionGranter.ViewModel
                         if (!u.OwnedPermissions.DenyPermissions.ContainsKey(cti.Name))
                             u.OwnedPermissions.DenyPermissions.Add(cti.Name, null);
                     }
-
-                    //if (cti.HasAccess == false)
-                    //{
-                    //    if (u.OwnedPermissions.DenyPermissions.ContainsKey(cti.Name))
-                    //        u.OwnedPermissions.DenyPermissions.Remove(cti.Name);
-                    //    if (u.OwnedPermissions.AllowPermissions.ContainsKey(cti.Name))
-                    //        u.OwnedPermissions.AllowPermissions.Remove(cti.Name);
-                    //}
                 }
             }
         }

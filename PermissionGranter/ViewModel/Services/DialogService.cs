@@ -1,4 +1,5 @@
-﻿using PermissionGranter.View;
+﻿using PermissionGranter.Model;
+using PermissionGranter.View;
 using PermissionGranter.ViewModel.Utility;
 using System;
 using System.Collections.Generic;
@@ -18,12 +19,12 @@ namespace PermissionGranter.ViewModel.Services
         {
         }
 
-        public bool? ShowDialog(string window)
+        public void ShowDialog(string window)
         {
             Type t = Type.GetType("PermissionGranter.View." + window);
             windowList[window] = (Window)Activator.CreateInstance(t);
             windowList[window].ShowDialog();
-            return windowList[window].DialogResult;
+            
         }
 
         public void Show(string window)
@@ -37,9 +38,23 @@ namespace PermissionGranter.ViewModel.Services
         {
             if (windowList[window] != null)
             {
-                windowList[window].Close();
+                //If window is closing .Close() will throw an exception, I don't care
+                try
+                {
+                    //windowList[window].Close();
+                    windowList[window].Hide();
+                }
+                catch (Exception) { }
                 windowList[window] = null;
             }
+        }
+
+        public void ShowUserwindow(User u)
+        {
+            StartWindow w = new StartWindow();
+            w.WindowUser = u;
+            windowList["StartWindow"] = w;
+            w.Show();
         }
     }
 }

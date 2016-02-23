@@ -27,9 +27,23 @@ namespace PermissionGranter.Model
             Description = description;
         }
 
+        public override int ID
+        {
+            get
+            {
+                return GroupID;
+            }
+        }
 
-        
-        public bool IsCorrect
+        public override string Name
+        {
+            get
+            {
+                return GroupName;
+            }
+        }
+
+        public override bool IsCorrect
         {
             get
             {
@@ -58,6 +72,7 @@ namespace PermissionGranter.Model
                 _GroupName = value;
                 NotifyPropertyChanged("GroupName");
                 NotifyPropertyChanged("IsCorrect");
+                NotifyPropertyChanged("Name");
 
             }
         }
@@ -92,8 +107,11 @@ namespace PermissionGranter.Model
             }
         }
 
-        
 
+        //public override bool Equals(object obj)
+        //{
+        //    return base.Equals(obj);
+        //}
 
         public override string ToString()
         {
@@ -104,7 +122,16 @@ namespace PermissionGranter.Model
 
         public ObservableCollection<User> GroupUsers
         {
-            get { return _GroupUsers; }
+            get
+            {
+                if (_GroupUsers == null && ID > -1)
+                {
+                    _GroupUsers = new ObservableCollection<User>();
+
+                }
+                    
+                return _GroupUsers ;
+            }
             set { _GroupUsers = value; }
         }
 

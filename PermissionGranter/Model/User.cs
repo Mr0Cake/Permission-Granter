@@ -22,7 +22,7 @@ namespace PermissionGranter.Model
     {
         #region userInfo
 
-        public bool IsCorrect
+        public override bool IsCorrect
         {
             get { return    !string.IsNullOrEmpty(LastName) && LastName.Length < 30 && 
                             !string.IsNullOrEmpty(FirstName) && FirstName.Length < 30 &&
@@ -30,7 +30,19 @@ namespace PermissionGranter.Model
                             !string.IsNullOrEmpty(Password) && Password.Length < 50; }
         }
 
-        
+
+        public override int ID
+        {
+            get
+            {
+                return UserID;
+            }
+        }
+
+        public override string Name
+        {
+            get { return FirstName + " " + LastName; }
+        }
 
 
         private string _LastName;
@@ -44,6 +56,7 @@ namespace PermissionGranter.Model
                 NotifyPropertyChanged("Output");
                 NotifyPropertyChanged("Iscorrect");
                 NotifyPropertyChanged("LastName");
+                NotifyPropertyChanged("Name");
             }
         }
 
@@ -58,11 +71,47 @@ namespace PermissionGranter.Model
                 NotifyPropertyChanged("Output");
                 NotifyPropertyChanged("Iscorrect");
                 NotifyPropertyChanged("FirstName");
+                NotifyPropertyChanged("Name");
             }
         }
 
 
         public int UserID { get; set; }
+
+        public void SetPassword(string pw)
+        {
+            _Password = pw;
+        }
+
+        private string GetPassword()
+        {
+            string password = Password;
+            string salt = InstanceID.ToString();
+            PasswordEncryption.EncryptPassword(ref password, 0, out salt);
+            if (string.IsNullOrEmpty(Salt))
+            {
+                Salt = salt;
+            }
+            return password;
+        }
+
+        private string _EncryptedPassword;
+
+        public string EncryptedPassword
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_EncryptedPassword))
+                    _EncryptedPassword = GetPassword();
+                return _EncryptedPassword;
+            }
+            set
+            {
+                _Password = value;
+            }
+        }
+
+        public bool PasswordChanged { get; set; }
 
         private string _Password;
 
@@ -71,15 +120,22 @@ namespace PermissionGranter.Model
             get { return _Password; }
             set
             {
-                string salt = base.InstanceID.ToString() ;
+                if (string.IsNullOrEmpty(value))
+                    return;
+                //_Password = value;
+
+                string salt = InstanceID.ToString() ;
                 string password = value;
                 PasswordEncryption.EncryptPassword(ref password, 0, out salt);
                 _Password = password;
-
+                Salt = salt;
+                PasswordChanged = true;
                 NotifyPropertyChanged("Iscorrect");
                 NotifyPropertyChanged("Password");
             }
         }
+
+        public string Salt { get; set; }
 
         private string _Email;
 
@@ -94,23 +150,37 @@ namespace PermissionGranter.Model
             }
         }
 
+        //public override bool Equals(object obj)
+        //{
+        //    return base.Equals(obj);
+        //}
 
-        
-        
+
 
         #endregion
 
         #region userPermissions
         //usergroups
-        private IList<UserGroup> _UserGroupPermissions = null;
+        private ObservableCollection<UserGroup> _UserGroupPermissions = new ObservableCollection<UserGroup>();
 
         /// <summary>
         /// Array van Usergroups waar de gebruiker toe behoord.
         /// </summary>
-        public IList<UserGroup> UserGroupPermissions
+        public ObservableCollection<UserGroup> UserGroupPermissions
         {
-            get { return _UserGroupPermissions ?? (_UserGroupPermissions = ViewModel.BLL.GroupBLL.GetGroupsByUserID(this.UserID)); }
-            set { _UserGroupPermissions = value; }
+            get
+            {
+                if((_UserGroupPermissions == null || _UserGroupPermissions.Count==0 )&& ID != -1)
+                {
+                    ViewModel.BLL.GroupBLL.GetGroupsByUserID(this.UserID).ToList().ForEach(x => _UserGroupPermissions.Add(x));
+                }
+                return _UserGroupPermissions;
+            }
+            set
+            {
+                _UserGroupPermissions = value;
+                NotifyPropertyChanged("UserGroupPermissions");
+            }
         }
         
 
@@ -205,8 +275,9 @@ namespace PermissionGranter.Model
             u.Email = Email;
             u.Password = Password;
             u.UserID = UserID;
+            u.Salt = Salt;
             u.OwnedPermissions = this.OwnedPermissions.GetCopy();
-            u.UserGroupPermissions = new List<UserGroup>();
+            u.UserGroupPermissions = new ObservableCollection<UserGroup>();
             foreach (UserGroup group in UserGroupPermissions)
             {
                 u.UserGroupPermissions.Add(group.GetCopy() as UserGroup);

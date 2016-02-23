@@ -26,7 +26,7 @@ namespace PermissionGranter
         {
             // TODO: Parse commandline arguments and other startup work 
             //if(ViewModel.Services.ViewModelLocator.UserSession == null)
-            ViewModel.Services.ViewModelLocator.UserSession = new Session(); 
+            ViewModel.Services.ViewModelLocator.UserSession.ShowLogin();
         }
     }
 }
