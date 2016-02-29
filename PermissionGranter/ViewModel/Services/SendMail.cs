@@ -25,7 +25,7 @@ namespace PermissionGranter.ViewModel.Services
             SmtpServer.UseDefaultCredentials = false;
             SmtpServer.Credentials = new System.Net.NetworkCredential("PermissionGranter123@hotmail.com", "Azerty123");
             SmtpServer.EnableSsl = true;
-            SmtpServer.Send(mail);
+            //SmtpServer.Send(mail);
         }
         
 

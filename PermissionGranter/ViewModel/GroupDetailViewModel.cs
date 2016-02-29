@@ -126,7 +126,8 @@ namespace PermissionGranter.ViewModel
                             }
                             else
                             {
-                                if (ug.Changed && ug.ID != -1)
+                                //if (ug.Changed && ug.ID != -1)
+                                if (ug.Changed)
                                     GroupBLL.EditUserGroup(ug);
                             }
                         }
@@ -140,12 +141,9 @@ namespace PermissionGranter.ViewModel
                     dbActions.Execute(AllItems.ToList());
                     SavePermissions();
                 }
-                MessageBox.Show("Opgeslagen.", "Opgeslagen", MessageBoxButton.OK);
+
+                MessageBox.Show("Database wordt geupdate.", "Opslaan", MessageBoxButton.OK);
                 
-
-
-                
-
             }
             else
             {

@@ -6,7 +6,7 @@
          xmlns:local="clr-namespace:PermissionGranter.View"
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
         mc:Ignorable="d"
-        Title="GroupDetail" Height="465" Width="600"
+        Title="GroupDetail" Height="480" Width="600"
         DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=GroupDetails}"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity">
     <i:Interaction.Triggers>

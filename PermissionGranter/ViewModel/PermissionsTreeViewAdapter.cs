@@ -71,7 +71,8 @@ namespace PermissionGranter.ViewModel
         public static void FillPermissions(PermissionsBase u, MenuItems tempItems)
         {
             List<CustTreeItems> items = tempItems.GetAllItemReferences();
-
+            u.OwnedPermissions.AllowPermissions.Clear();
+            u.OwnedPermissions.DenyPermissions.Clear();
             foreach(CustTreeItems cti in items)
             {
                 //heeft het treeitem options?

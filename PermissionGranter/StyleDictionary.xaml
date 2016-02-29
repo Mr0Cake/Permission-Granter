@@ -60,9 +60,9 @@
     </Style>
 
     <Style TargetType="TextBox" x:Key="TextBoxPropertyStyle">
-        <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <!--<Setter Property="Margin" Value="5,0,0,0"/>-->
-        <Setter Property="Width" Value="120"/>
+        <!--<Setter Property="Width" Value="120"/>-->
     </Style>
 
     <Style TargetType="Label" x:Key="LabelPropertyStyle">

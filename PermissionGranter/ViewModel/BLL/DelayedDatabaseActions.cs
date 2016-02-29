@@ -186,149 +186,140 @@ namespace PermissionGranter.ViewModel.BLL
             AddMessage(AddUser, sb.ToString());
         }
 
+        private string ptag(string tag)
+        {
+            return "<p style=\"text-color:red;\">"+tag+@"</p>";
+        }
+
+        private HashSet<string> ptagAll(HashSet<string> input)
+        {
+            HashSet<string> output = new HashSet<string>();
+            if (input != null && input.Count > 0)
+            {
+                foreach (var v in input)
+                {
+                    output.Add(ptag(v));
+                }
+            }
+            else
+            {
+                return input;
+            }
+            return output;
+        }
+
+        private string btag(string tag)
+        {
+            return "<p><b>" + tag + @"</b></p>";
+        }
+
+        private HashSet<string> btagAll(HashSet<string> input)
+        {
+            HashSet<string> output = new HashSet<string>();
+
+            if (input != null && input.Count > 0)
+            {
+                foreach (var v in input)
+                {
+                    output.Add(btag(v));
+                }
+            }
+            else
+            {
+                return input;
+            }
+            return output;
+        }
+
+        private StringBuilder AddPermissionsToStringBuilder(StringBuilder sb, HashSet<string> text)
+        {
+            foreach(var v in text)
+            {
+                sb.Append("<li>").Append(v).Append("</li>");
+            }
+            return sb;
+        }
+
         public void ChangesToPermission(User OldUser, User NewUser)
         {
             StringBuilder sb = new StringBuilder();
-            if(OldUser.OwnedPermissions.AllowPermissions.Count == 0 && NewUser.OwnedPermissions.AllowPermissions.Count > 0)
+            Dictionary<string, HashSet<string>> CombinedAllowPermissions = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, HashSet<string>> CombinedDenyPermissions = new Dictionary<string, HashSet<string>>();
+            //deletedKeys
+            OldUser.OwnedPermissions.AllowPermissions.Where(g => !NewUser.OwnedPermissions.AllowPermissions.ContainsKey(g.Key)).ToList().ForEach(x => CombinedAllowPermissions.Add(ptag(x.Key), ptagAll(x.Value)));
+            OldUser.OwnedPermissions.DenyPermissions.Where(g => !NewUser.OwnedPermissions.DenyPermissions.ContainsKey(g.Key)).ToList().ForEach(x => CombinedDenyPermissions.Add(ptag(x.Key), ptagAll(x.Value)));
+            //addedKeys
+            NewUser.OwnedPermissions.AllowPermissions.Where(g => !OldUser.OwnedPermissions.AllowPermissions.ContainsKey(g.Key)).ToList().ForEach(x => CombinedAllowPermissions.Add(btag(x.Key), btagAll(x.Value)));
+            NewUser.OwnedPermissions.DenyPermissions.Where(g => !OldUser.OwnedPermissions.DenyPermissions.ContainsKey(g.Key)).ToList().ForEach(x => CombinedDenyPermissions.Add(btag(x.Key), btagAll(x.Value)));
+            //ModifiedKeys
+
+
+            #region Allow
+            NewUser.OwnedPermissions.AllowPermissions.ToList().Where(x => OldUser.OwnedPermissions.AllowPermissions.ContainsKey(x.Key)).ToList().ForEach(z =>
             {
-                sb.Append("Volgende allow permissies zijn toegevoegd:\r\n");
-                foreach(var v in NewUser.OwnedPermissions.AllowPermissions)
+                HashSet<string> value = new HashSet<string>();
+                //removedPermissions
+                OldUser.OwnedPermissions.AllowPermissions[z.Key]
+                .Where(y => NewUser.OwnedPermissions.AllowPermissions[z.Key] == null || (NewUser.OwnedPermissions.AllowPermissions[z.Key] != null && !NewUser.OwnedPermissions.AllowPermissions[z.Key].Contains(y))).ToList().ForEach(perms => value.Add(ptag(perms)));
+                //AddedPermissions
+                NewUser.OwnedPermissions.AllowPermissions[z.Key]
+                .Where(y => OldUser.OwnedPermissions.AllowPermissions[z.Key] == null || (OldUser.OwnedPermissions.AllowPermissions[z.Key] != null && !OldUser.OwnedPermissions.AllowPermissions[z.Key].Contains(y))).ToList().ForEach(perms => value.Add(btag(perms)));
+                //Unchanged
+                NewUser.OwnedPermissions.AllowPermissions[z.Key]
+                .Where(y => OldUser.OwnedPermissions.AllowPermissions[z.Key] != null && OldUser.OwnedPermissions.AllowPermissions[z.Key].Contains(y)).ToList().ForEach(perms => value.Add("<p>"+perms+"</p>"));
+
+                //add the list
+                CombinedAllowPermissions.Add(z.Key, value);
+                
+            });
+
+            #endregion
+
+            #region Deny
+            NewUser.OwnedPermissions.DenyPermissions.ToList().Where(x => OldUser.OwnedPermissions.DenyPermissions.ContainsKey(x.Key)).ToList().ForEach(z =>
+            {
+                HashSet<string> value = new HashSet<string>();
+                //removedPermissions
+                OldUser.OwnedPermissions.DenyPermissions[z.Key]
+                .Where(y => NewUser.OwnedPermissions.DenyPermissions[z.Key] == null || (NewUser.OwnedPermissions.DenyPermissions[z.Key] != null && !NewUser.OwnedPermissions.DenyPermissions[z.Key].Contains(y))).ToList().ForEach(perms => value.Add(ptag(perms)));
+                //AddedPermissions
+                NewUser.OwnedPermissions.DenyPermissions[z.Key]
+                .Where(y => OldUser.OwnedPermissions.DenyPermissions[z.Key] == null || (OldUser.OwnedPermissions.DenyPermissions[z.Key] != null && !OldUser.OwnedPermissions.DenyPermissions[z.Key].Contains(y))).ToList().ForEach(perms => value.Add(btag(perms)));
+                //Unchanged
+                NewUser.OwnedPermissions.DenyPermissions[z.Key]
+                .Where(y => OldUser.OwnedPermissions.DenyPermissions[z.Key] != null && OldUser.OwnedPermissions.DenyPermissions[z.Key].Contains(y)).ToList().ForEach(perms => value.Add("<p>" + perms + "</p>"));
+
+                //add the list
+                CombinedDenyPermissions.Add(z.Key, value);
+
+            });
+            #endregion
+
+
+            sb.Append("<p>Veranderingen in AllowPermissies:</p>");
+            foreach(var v in CombinedAllowPermissions)
+            {
+                sb.Append(v.Key);
+                if (v.Value != null)
                 {
-                    sb.AppendLine(v.Key);
-                    foreach(string a in NewUser.OwnedPermissions.AllowPermissions[v.Key])
-                    {
-                        sb.AppendLine("\t" + a);
-                    }
+                    sb.Append("<ul>");
+                    AddPermissionsToStringBuilder(sb, v.Value);
+                    sb.Append("</ul>");
                 }
             }
-            sb.AppendLine();
-            if (OldUser.OwnedPermissions.AllowPermissions.Count > 0 && NewUser.OwnedPermissions.AllowPermissions.Count == 0)
+
+            sb.Append("<p>Veranderingen in DenyPermissies:</p>");
+            foreach (var v in CombinedAllowPermissions)
             {
-                sb.Append("Volgende allow permissies zijn verwijderd:\r\n");
-                foreach (var v in NewUser.OwnedPermissions.AllowPermissions)
+                sb.Append(v.Key);
+                if (v.Value != null)
                 {
-                    sb.AppendLine(v.Key);
-                    foreach (string a in NewUser.OwnedPermissions.AllowPermissions[v.Key])
-                    {
-                        sb.AppendLine("\t" + a);
-                    }
+                    sb.Append("<ul>");
+                    AddPermissionsToStringBuilder(sb, v.Value);
+                    sb.Append("</ul>");
                 }
             }
-            sb.AppendLine();
-            if (OldUser.OwnedPermissions.DenyPermissions.Count == 0 && NewUser.OwnedPermissions.DenyPermissions.Count > 0)
-            {
-                sb.Append("Volgende deny permissies zijn toegevoegd:\r\n");
-                foreach (var v in NewUser.OwnedPermissions.AllowPermissions)
-                {
-                    sb.AppendLine(v.Key);
-                    foreach (string a in NewUser.OwnedPermissions.AllowPermissions[v.Key])
-                    {
-                        sb.AppendLine("\t" + a);
-                    }
-                }
-            }
-            sb.AppendLine();
-            if (OldUser.OwnedPermissions.DenyPermissions.Count > 0 && NewUser.OwnedPermissions.DenyPermissions.Count == 0)
-            {
-                sb.Append("Volgende deny permissies zijn verwijderd:\r\n");
-                foreach (var v in NewUser.OwnedPermissions.AllowPermissions)
-                {
-                    sb.AppendLine(v.Key);
-                    foreach (string a in NewUser.OwnedPermissions.AllowPermissions[v.Key])
-                    {
-                        sb.AppendLine("\t" + a);
-                    }
-                }
-            }
-            sb.AppendLine();
-
-            sb.AppendLine("AllowPermissions");
-            if (OldUser.OwnedPermissions.AllowPermissions.Count > 0 && NewUser.OwnedPermissions.AllowPermissions.Count > 0)
-            {
-                if(OldUser != NewUser)
-                {
-                    if(OldUser.OwnedPermissions.AllowPermissions.Count > 0 && NewUser.OwnedPermissions.AllowPermissions.Count > 0)
-                    {
-                        StringBuilder gewijzigd = new StringBuilder();
-                        OldUser.OwnedPermissions.AllowPermissions.ToList().ForEach(x =>
-                        {
-                            if (NewUser.OwnedPermissions.AllowPermissions.ContainsKey(x.Key))
-                            {
-                                gewijzigd.Append(x.Key).Append(" Gewijzigd\r\n");
-                                x.Value.Where(p => !NewUser.OwnedPermissions.AllowPermissions[x.Key].Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" verwijderd"));
-                                NewUser.OwnedPermissions.AllowPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" toegevoegd"));
-
-                            }
-                            else
-                            {
-                                sb.Append(x.Key).Append(" Verwijderd\r\n");
-                                x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                            }
-                        });
-                        NewUser.OwnedPermissions.AllowPermissions.ToList().ForEach(x =>
-                        {
-                            if (OldUser.OwnedPermissions.AllowPermissions.ContainsKey(x.Key))
-                            {
-                                gewijzigd.Append(x.Key).Append(" Gewijzigd\r\n");
-                                x.Value.Where(p => !OldUser.OwnedPermissions.AllowPermissions[x.Key].Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" verwijderd"));
-                                OldUser.OwnedPermissions.AllowPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" toegevoegd"));
-
-                            }
-                            else
-                            {
-                                sb.Append(x.Key).Append(" Toegevoegd\r\n");
-                                x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                            }
-                        });
-                        sb.AppendLine().Append(gewijzigd);
-                    }
-                }
-            }
-            sb.AppendLine();
-            sb.AppendLine("DenyPermissions");
-
-            if (OldUser.OwnedPermissions.DenyPermissions.Count > 0 && NewUser.OwnedPermissions.DenyPermissions.Count > 0)
-            {
-                if (OldUser != NewUser)
-                {
-                    if (OldUser.OwnedPermissions.DenyPermissions.Count > 0 && NewUser.OwnedPermissions.DenyPermissions.Count > 0)
-                    {
-                        StringBuilder gewijzigd = new StringBuilder();
-                        OldUser.OwnedPermissions.DenyPermissions.ToList().ForEach(x =>
-                        {
-                            if (NewUser.OwnedPermissions.DenyPermissions.ContainsKey(x.Key))
-                            {
-                                gewijzigd.Append(x.Key).Append(" Gewijzigd\r\n");
-                                x.Value.Where(p => !NewUser.OwnedPermissions.DenyPermissions[x.Key].Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" verwijderd"));
-                                NewUser.OwnedPermissions.DenyPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" toegevoegd"));
-
-                            }
-                            else
-                            {
-                                sb.Append(x.Key).Append(" Verwijderd\r\n");
-                                x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                            }
-                        });
-                        NewUser.OwnedPermissions.DenyPermissions.ToList().ForEach(x =>
-                        {
-                            if (OldUser.OwnedPermissions.DenyPermissions.ContainsKey(x.Key))
-                            {
-                                gewijzigd.Append(x.Key).Append(" Gewijzigd\r\n");
-                                x.Value.Where(p => !OldUser.OwnedPermissions.DenyPermissions[x.Key].Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" verwijderd"));
-                                OldUser.OwnedPermissions.DenyPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => gewijzigd.AppendLine("\t").Append(z).Append(" toegevoegd"));
-
-                            }
-                            else
-                            {
-                                sb.Append(x.Key).Append(" Toegevoegd\r\n");
-                                x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                            }
-                        });
-                        sb.AppendLine().Append(gewijzigd);
-                    }
-                }
-            }
-            sb.AppendLine();
+            
 
             AddMessage(NewUser, sb.ToString());
         }

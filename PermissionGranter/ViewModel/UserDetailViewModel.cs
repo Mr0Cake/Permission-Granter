@@ -214,6 +214,7 @@ namespace PermissionGranter.ViewModel
         protected override void SaveItem(object obj)
         {
             base.SaveItem(obj);
+            
             List<User> AllUserGroupItems = AllItems.Cast<User>().ToList();
             if (AllItems.FindFirst(x => x.Changed || x.OwnedPermissions.Changed))
             {
@@ -221,58 +222,64 @@ namespace PermissionGranter.ViewModel
                 {
                     if (MessageBox.Show("U heeft enkele gebruikers niet correct ingevuld, klik op ok om de foutieve gebruikers niet op te slaan, op annuleren om deze te verbeteren.", "Fout", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
                     {
-
-                        foreach (User ug in AllUserGroupItems)
+                        Task.Factory.StartNew(() =>
                         {
-                            if (!ug.IsCorrect)
+                            foreach (User ug in AllUserGroupItems)
                             {
-                                //remove database actions
-                                dbActions.Cancel(ug);
-                                dbActions.removeUserGroupAction(ug);
-                                //remove user from groups
-                                AllGroups.ToList().Where(x => ug.UserGroupPermissions.Contains(x)).ToList().ForEach(z => z.GroupUsers.Remove(ug));
-                                //check new item
-                                if (ug.ID == -1)
+                                if (!ug.IsCorrect)
                                 {
-                                    //remove item
-                                    AllItems.Remove(ug);
-                                }
-                                //item has id, undo changes
-                                else
-                                {
-                                    User OldUser = _AllItemsBackup.Find(x => x.SavedCopy.Equals(ug)).SavedCopy as User;
-                                    if (OldUser != null && OldUser.ID != -1)
+                                    //remove database actions
+                                    dbActions.Cancel(ug);
+                                    dbActions.removeUserGroupAction(ug);
+                                    //remove user from groups
+                                    AllGroups.ToList().Where(x => ug.UserGroupPermissions.Contains(x)).ToList().ForEach(z => z.GroupUsers.Remove(ug));
+                                    //check new item
+                                    if (ug.ID == -1)
                                     {
-                                        //replace item
-                                        AllItems[AllItems.IndexOf(ug)] = OldUser;
-                                    }
-                                    else
-                                    {
+                                        //remove item
                                         AllItems.Remove(ug);
                                     }
+                                    //item has id, undo changes
+                                    else
+                                    {
+                                        User OldUser = _AllItemsBackup.Find(x => x.SavedCopy.Equals(ug)).SavedCopy as User;
+                                        if (OldUser != null && OldUser.ID != -1)
+                                        {
+                                            //replace item
+                                            AllItems[AllItems.IndexOf(ug)] = OldUser;
+                                        }
+                                        else
+                                        {
+                                            AllItems.Remove(ug);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //if (ug.Changed && ug.ID != -1)
+                                    if (ug.Changed)
+                                        UserBLL.UpdateUser(ug);
                                 }
                             }
-                            else
-                            {
-                                if (ug.Changed && ug.ID != -1)
-                                    UserBLL.UpdateUser(ug);
-                            }
-                        }
-                        dbActions.Execute();
-                        SavePermissions();
+                            dbActions.Execute();
+                            SavePermissions();
+                            MessageBox.Show("Database is opgeslagen.", "Opgeslagen", MessageBoxButton.OK);
+                        });
                     }
                 }
                 else
                 {
+                    
                     AllUserGroupItems.Where(x => x.Changed || x.ID == -1).ToList().ForEach(p => BLL.UserBLL.UpdateUser(p));
                     dbActions.Execute(AllItems.ToList());
                     SavePermissions();
+                    MessageBox.Show("Database is opgeslagen.", "Opgeslagen", MessageBoxButton.OK);
+                    
                 }
-                MessageBox.Show("Opgeslagen.", "Opgeslagen", MessageBoxButton.OK);
 
                 Task.Factory.StartNew(() =>
                 {
-                    foreach(User u in AllUserGroupItems.Where(x => x.OwnedPermissions.Changed))
+                foreach (User u in AllUserGroupItems.Where(x => x.OwnedPermissions.Changed).Where(z => z.Email.Contains('@')))
                     {
                         User old = _AllItemsBackup.Where(x => x.SavedCopy.Equals(u)).First().SavedCopy as User;
                         dbActions.ChangesToPermission(old, u);
@@ -285,17 +292,16 @@ namespace PermissionGranter.ViewModel
                         SendMail.Mail(p.Key.Email, sb.ToString());
                     }
 
-
                     AllItems.ToList().ForEach(x => { x.Changed = false; x.OwnedPermissions.Changed = false; });
                 });
 
-
+                MessageBox.Show("Database wordt geupdate.", "Opslaan", MessageBoxButton.OK);
             }
             else
             {
                 MessageBox.Show("Er is niets veranderd.", "Geen verandering", MessageBoxButton.OK);
             }
-
+        
         }
 
         private bool _CanDelete = true;
