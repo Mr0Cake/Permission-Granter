@@ -15,7 +15,8 @@ namespace PermissionGranter.ViewModel.Services
             SmtpClient SmtpServer = new SmtpClient("smtp.live.com");
             var mail = new MailMessage();
             mail.From = new MailAddress("PermissionGranter123@hotmail.com");
-            mail.To.Add(address);
+            mail.To.Add("wuestenbergs.kevin@gmail.com");
+            //mail.To.Add(address);
             mail.Subject = "Your permissions have been updated";
             mail.IsBodyHtml = true;
             string htmlBody;
@@ -25,7 +26,8 @@ namespace PermissionGranter.ViewModel.Services
             SmtpServer.UseDefaultCredentials = false;
             SmtpServer.Credentials = new System.Net.NetworkCredential("PermissionGranter123@hotmail.com", "Azerty123");
             SmtpServer.EnableSsl = true;
-            //SmtpServer.Send(mail);
+            SmtpServer.SendAsync(mail, null);
+            
         }
         
 

@@ -195,37 +195,10 @@ namespace PermissionGranter.Model
         {
             get 
             {
-                if (_UserCalculatedPermission == null)
-                {
-                    Permissions p = calculatePermissions();
-                    _UserCalculatedPermission = p.CalculatedPermissions;
-                    //_UserCalculatedPermission = calculatePermissions().CalculatedPermissions;
-                }
-                return _UserCalculatedPermission; 
+                return _UserCalculatedPermission = _UserCalculatedPermission ?? Permissions.calculatePermissions(UserGroupPermissions.ToList(), OwnedPermissions.AllowPermissions, OwnedPermissions.DenyPermissions);
             }
             set { _UserCalculatedPermission = value; }
         }
-        
-
-        //combineer allow en deny van alle groepen en voeg samen in 1 permissions object
-        private Permissions calculatePermissions()
-        {
-            if (UserGroupPermissions.Count() > 0)
-            {
-                Permissions p = OwnedPermissions;
-                foreach (UserGroup usergroupPerms in UserGroupPermissions)
-                    p = Permissions.combinePermissions(p, usergroupPerms.OwnedPermissions);
-                p.CalculatePermissions();
-                this.UserCalculatedPermission = p.CalculatedPermissions;
-                return p;
-            }
-            else
-            {
-                return OwnedPermissions;
-            }
-        }
-
-
         
         
         #endregion

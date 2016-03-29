@@ -1,10 +1,12 @@
 ﻿using PermissionGranter.Model;
+using PermissionGranter.ViewModel.Services;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PermissionGranter.ViewModel.Utility;
 
 namespace PermissionGranter.ViewModel.BLL
 {
@@ -21,7 +23,10 @@ namespace PermissionGranter.ViewModel.BLL
         public HashSet<PermissionsBase> DeleteObjects = new HashSet<PermissionsBase>();
         public HashSet<PermissionsBase> AddObjects = new HashSet<PermissionsBase>();
         public HashSet<GroupAction> GroupActions = new HashSet<GroupAction>();
-        public Dictionary<User, List<string>> NotificationMail = new Dictionary<User, List<string>>();
+        public Dictionary<User, StringBuilder> NotificationMail = new Dictionary<User, StringBuilder>();
+
+        
+
 
         public DelayedDatabaseActions()
         {
@@ -31,15 +36,12 @@ namespace PermissionGranter.ViewModel.BLL
         
         public void AddMessage(User u, string message)
         {
-            List<string> messages;
+            StringBuilder messages;
             if(!NotificationMail.TryGetValue(u, out messages))
             {
-                NotificationMail.Add(u, new List<string> { message });
+                NotificationMail.Add(u, new StringBuilder());
             }
-            else
-            {
-                NotificationMail[u].Add(message);
-            }
+            NotificationMail[u].AppendLine(message);
         }
 
         //public Dictionary<string, HashSet<string>> getChanges(Dictionary<string, HashSet<string>> permissions1, Dictionary<string, HashSet<string>> permissions2)
@@ -72,6 +74,7 @@ namespace PermissionGranter.ViewModel.BLL
                     if(x is UserGroup)
                     {
                         GroupBLL.DeleteUserGroup(x as UserGroup);
+                        (x as UserGroup).GroupUsers.ToList().ForEach(groupuser => ChangesToGroup(groupuser, x as UserGroup, true));
                     }
                     else
                     {
@@ -95,6 +98,12 @@ namespace PermissionGranter.ViewModel.BLL
                 }
             });
 
+            foreach (var v in NotificationMail)
+            {
+                SendMail.Mail(v.Key.Email, v.Value.ToString());
+
+            }
+
             if (currentItems.Count > 0)
             {
                 GroupActions.ToList().ForEach(action =>
@@ -104,7 +113,6 @@ namespace PermissionGranter.ViewModel.BLL
                         UserGroup ug = currentItems[currentItems.IndexOf(action.Group)] as UserGroup;
                         if(ug.ID > -1 && action.AddUser.ID > -1 )
                         {
-                            StringBuilder sb = new StringBuilder();
                             if (action.AddOrRemove)
                             {
                                 UserBLL.AddUserToGroup(action.AddUser, ug);
@@ -137,52 +145,106 @@ namespace PermissionGranter.ViewModel.BLL
                     }
                 });
             }
+            
                 
+        }
+
+        private string GetPermDifferences(HashSet<string> old, HashSet<string> newlist)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if (old == null)
+                old = new HashSet<string>();
+            if (newlist == null)
+                newlist = new HashSet<string>();
+            //check same items
+            if(old.Count == newlist.Count)
+                if (old.All(x => newlist.Contains(x)) && newlist.All(x => old.Contains(x)))
+                    return sb.ToString();
+
+                sb.AppendLine("<ul>");
+                //deleted perms
+                old.Where(p => !newlist.Contains(p)).ToList().ForEach(x => listTag(sb, x, "red"));
+                //added perms
+                newlist.Where(p => !old.Contains(p)).ToList().ForEach(x => listTag(sb, x, "green"));
+                //unchanged
+                newlist.Where(x => old.Contains(x)).ToList().ForEach(p => listTag(sb, p));
+                sb.AppendLine("</ul>");
+
+            return sb.ToString();
+        }
+
+        private void listTag(StringBuilder sb, string input, string color = "black")
+        {
+            sb.Append("<li><p style=\"color:").Append(color).Append("\">").Append(input).Append("</p></li>");
+        }
+
+        private string GetDifferences(Dictionary<string, HashSet<string>> old, Dictionary<string, HashSet<string>> newperm)
+        {
+            StringBuilder sb = new StringBuilder();
+            //deleted perms
+            
+            old.ToList().Where(x => !newperm.ContainsKey(x.Key)).ToList().ForEach(p =>
+            {
+                sb.AppendLine("<li>");
+                sb.AppendLine("<p style=\"color:red;\">" + p.Key + "</p>");
+                sb.AppendLine(GetPermDifferences(p.Value, new HashSet<string>()));
+                sb.AppendLine("</li>");
+            });
+            
+            //added perms
+            newperm.ToList().Where(x => !old.ContainsKey(x.Key)).ToList().ForEach(p =>
+            {
+                sb.AppendLine("<li>");
+                sb.AppendLine("<p style=\"color:green;\">" + p.Key + "</p>");
+                sb.AppendLine(GetPermDifferences(new HashSet<string>(), p.Value));
+                sb.AppendLine("</li>");
+            });
+            //same perms
+            newperm.ToList().Where(x => old.ContainsKey(x.Key)).ToList().ForEach(p =>
+            {
+                string differences = GetPermDifferences(old[p.Key], p.Value);
+                if (differences != "")
+                {
+                    sb.AppendLine("<li>");
+                    sb.AppendLine("<p>" + p.Key + "</p>");
+                    sb.AppendLine(differences);
+                    sb.AppendLine("</li>");
+                }
+            });
+            return sb.ToString() ;
+        
+        }
+
+        public void ChangesToGroupPermission(Memento<PermissionsBase> memento, PermissionsBase p)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("<p>Changes in group: " + p.Name+ "</p>");
+            sb.AppendLine("<ul>");
+            sb.AppendLine("<li><p>AllowPermissions</p><ul>");
+            sb.AppendLine(GetDifferences(memento.SavedCopy.OwnedPermissions.AllowPermissions, p.OwnedPermissions.AllowPermissions));
+            sb.AppendLine("</ul>");
+            sb.AppendLine("<li><p>DenyPermissions</p><ul>");
+            sb.AppendLine(GetDifferences(memento.SavedCopy.OwnedPermissions.DenyPermissions, p.OwnedPermissions.DenyPermissions));
+            sb.AppendLine("</ul>");
+            sb.AppendLine("</ul>");
+            foreach (User u in (p as UserGroup).GroupUsers)
+            {
+                AddMessage(u, sb.ToString());
+            }
         }
 
         private string getDel(bool deleted)
         {
-            return deleted ? "verwijderd" : "toegevoegd";
+            return deleted ? "<span style=\"color:red;\">verwijderd</span>" : "toegevoegd";
         }
 
         public void ChangesToGroup(User AddUser, UserGroup ug, bool deleted)
         {
             StringBuilder sb = new StringBuilder();
             string del = getDel(deleted);
-            sb.Append("U bent "+del+" aan de groep: ").Append(ug.Name).Append(Environment.NewLine);
-            sb.Append("Volgende permissies zijn gewijzigd: \r\n");
-            sb.Append("AllowPermissies: \r\n");
-            ug.OwnedPermissions.AllowPermissions.ToList().ForEach(x =>
-            {
-                if (AddUser.OwnedPermissions.AllowPermissions.ContainsKey(x.Key))
-                {
-                    sb.Append(x.Key).Append(" Gewijzigd");
-                    x.Value.Where(p => !AddUser.OwnedPermissions.AllowPermissions[x.Key].Contains(p)).ToList().ForEach(z => sb.AppendLine("\t").Append(z).Append(" "+ getDel(!deleted)));
-                    AddUser.OwnedPermissions.AllowPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => sb.AppendLine("\t").Append(z).Append(" "+ getDel(!deleted)));
-
-                }
-                else
-                {
-                    sb.Append(x.Key).Append(del);
-                    x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                }
-            });
-            sb.Append("DenyPermissies: \r\n");
-            ug.OwnedPermissions.DenyPermissions.ToList().ForEach(x =>
-            {
-                if (AddUser.OwnedPermissions.DenyPermissions.ContainsKey(x.Key))
-                {
-                    sb.Append(x.Key).Append(" Gewijzigd");
-                    x.Value.Where(p => !AddUser.OwnedPermissions.DenyPermissions[x.Key].Contains(p)).ToList().ForEach(z => sb.AppendLine("\t").Append(z).Append(" " + getDel(!deleted)));
-                    AddUser.OwnedPermissions.DenyPermissions[x.Key].Where(p => !x.Value.Contains(p)).ToList().ForEach(z => sb.AppendLine("\t").Append(z).Append(" " + getDel(!deleted)));
-
-                }
-                else
-                {
-                    sb.Append(x.Key).Append(del);
-                    x.Value.ToList().ForEach(p => sb.AppendLine("\t").Append(p));
-                }
-            });
+            sb.Append("U bent "+del+" "+(deleted?"van":"aan")+" de groep: ").Append(ug.Name).AppendLine();
+            
             AddMessage(AddUser, sb.ToString());
         }
 
@@ -231,11 +293,11 @@ namespace PermissionGranter.ViewModel.BLL
             return output;
         }
 
-        private StringBuilder AddPermissionsToStringBuilder(StringBuilder sb, HashSet<string> text)
+        private StringBuilder AddPermissionsToStringBuilder(StringBuilder sb, HashSet<string> text, string color = "black")
         {
             foreach(var v in text)
             {
-                sb.Append("<li>").Append(v).Append("</li>");
+                sb.Append("<li>").Append("<p style=\"color:"+color+"\">").Append(v).Append("</p>").Append("</li>");
             }
             return sb;
         }

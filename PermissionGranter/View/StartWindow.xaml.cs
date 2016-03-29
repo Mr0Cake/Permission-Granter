@@ -38,7 +38,8 @@ namespace PermissionGranter.View
                 _windowUser = value;
                 //MenuItems fill = new MenuItems();
                 createUserItems = PermissionsBLL.GetTreeMenu();
-                PermissionsTreeViewAdapter.FillMenuItems(createUserItems, _windowUser);
+                
+                PermissionsTreeViewAdapter.FillMenuItems(createUserItems, Permissions.calculatePermissions((_windowUser as User).UserGroupPermissions.ToList(), _windowUser.OwnedPermissions.AllowPermissions, _windowUser.OwnedPermissions.DenyPermissions));
                 removeItems();
                 //mnu.ItemsSource = fill;
                 NotifyPropertyChanged("createUserItems");
@@ -170,7 +171,29 @@ namespace PermissionGranter.View
             spButtons.Children.Clear();
             //string type = "Word";
             //MessageBox.Show("cleared");
-            foreach (var s in Permissions.Options.Where(x=> x.Value == true))
+            string p_name = Permissions.Name;
+            HashSet<string> allowedButtons = new HashSet<string>();
+            HashSet<string> denyButtons = new HashSet<string>();
+
+            if (WindowUser.OwnedPermissions.AllowPermissions.ContainsKey(Permissions.Name)) 
+            allowedButtons.AddRange(WindowUser.OwnedPermissions.AllowPermissions[Permissions.Name]);
+
+            foreach(UserGroup ug in (_windowUser as User).UserGroupPermissions)
+            {
+                if (ug.OwnedPermissions.AllowPermissions.ContainsKey(Permissions.Name))
+                {
+                    allowedButtons.AddRange(ug.OwnedPermissions.AllowPermissions[Permissions.Name]);
+                }
+                if (ug.OwnedPermissions.DenyPermissions.ContainsKey(Permissions.Name))
+                {
+                    denyButtons.AddRange(ug.OwnedPermissions.DenyPermissions[Permissions.Name]);
+                }
+            }
+
+            allowedButtons.RemoveWhere(x => denyButtons.Contains(x));
+            
+
+            foreach (var s in Permissions.Options.Where(x=> allowedButtons.Contains(x.Name)))
             {
                 object[] parameters = new object[] { s.Description };
                 MethodInfo methodinfo = methods[s.Name];
@@ -243,6 +266,11 @@ namespace PermissionGranter.View
         private void TextBlock_MouseDown(object sender, MouseButtonEventArgs e)
         {
 
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            Application.Current.Shutdown();
         }
     }
 }

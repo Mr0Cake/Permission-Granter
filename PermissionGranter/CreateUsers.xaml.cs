@@ -82,7 +82,6 @@ namespace PermissionGranter
             string type = "Word";
             tempUser.OwnedPermissions.AllowPermissions.Add(type, actions);
             tempUser.OwnedPermissions.DenyPermissions.Add(type, deny);
-            tempUser.OwnedPermissions.CalculatePermissions();
             Users.Add(tempUser);
             CheckBox cb = new CheckBox();
             

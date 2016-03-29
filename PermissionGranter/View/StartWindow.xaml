@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
         Title="StartWindow" Height="600" Width="800"
-        DataContext="{Binding RelativeSource={RelativeSource Self}}">
+        DataContext="{Binding RelativeSource={RelativeSource Self}}" Closing="Window_Closing">
     <Window.Resources>
         
     </Window.Resources>

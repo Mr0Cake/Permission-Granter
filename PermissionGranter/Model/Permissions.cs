@@ -8,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace PermissionGranter.Model
 {
-    public class Permissions:CanCopy<Permissions>, INotifyPropertyChanged
+    public class Permissions : CanCopy<Permissions>, INotifyPropertyChanged
     {
         public Permissions(Dictionary<string, HashSet<string>> allow, Dictionary<string, HashSet<string>> deny)
         {
             AllowPermissions = allow;
             DenyPermissions = deny;
-            CalculatePermissions();
         }
 
         public Permissions(Permissions copy)
@@ -39,7 +38,7 @@ namespace PermissionGranter.Model
         }
 
         //allow
-        private Dictionary<string, HashSet<string>> _AllowPermissions = new Dictionary<string,HashSet<string>>();
+        private Dictionary<string, HashSet<string>> _AllowPermissions = new Dictionary<string, HashSet<string>>();
 
         /// <summary>
         /// Permissions die zijn toegelaten
@@ -53,7 +52,7 @@ namespace PermissionGranter.Model
 
         //deny
 
-        private Dictionary<string, HashSet<string>> _DenyPermissions = new Dictionary<string,HashSet<string>>();
+        private Dictionary<string, HashSet<string>> _DenyPermissions = new Dictionary<string, HashSet<string>>();
 
         /// <summary>
         /// Permissions die verboden zijn
@@ -64,20 +63,7 @@ namespace PermissionGranter.Model
             set { _DenyPermissions = value; }
         }
 
-        private Dictionary<string, HashSet<string>> _CalculatedPermissions = new Dictionary<string,HashSet<string>>();
-
-        /// <summary>
-        /// Permissions die verboden zijn
-        /// </summary>
-        public Dictionary<string, HashSet<string>> CalculatedPermissions
-        {
-            get 
-            {
-                CalculatePermissions();
-                return _CalculatedPermissions; 
-            }
-            set { _CalculatedPermissions = value; }
-        }
+        
 
         private bool _Changed = false;
 
@@ -105,22 +91,10 @@ namespace PermissionGranter.Model
             }
         }
 
-        /// <summary>
-        /// Fills the CalculatedPermissions. 
-        /// It will remove all AllowPermissions that have been denied by DenyPermision
-        /// 
-        /// </summary>
-        public void CalculatePermissions()
-        {
-            Dictionary<string, HashSet<string>> CalcPermissions = new Dictionary<string, HashSet<string>>(_AllowPermissions);
-            _CalculatedPermissions =
-            CalcPermissions.AsEnumerable().Where(x => _DenyPermissions.ContainsKey(x.Key)).Where(x => x.Value.RemoveRange(_DenyPermissions[x.Key]) && x.Value.Count>0).ToDictionary(x => x.Key, y => y.Value);
-            //Allow permissies als enumerable, waar de key van de allow dictionary voorkomt in deny, waar x.Value=HashSet<string>.Verwijder de permissies van deny (altijd true) dus alle KeyValuePairs worden meegenomen tenzij deze leeg is geraakt, naar nieuwe dictionary
-        }
-
-
-
         
+
+
+
 
         /// <summary>
         /// add a permission to a control
@@ -128,10 +102,10 @@ namespace PermissionGranter.Model
         /// <param name="control">name of the control</param>
         /// <param name="permission">name of the permission to be executed</param>
         /// <param name="allowOrDeny">true = allow list, false = deny list</param>
-        public void addPermission(string control, bool allowOrDeny, string permission="")
+        public void addPermission(string control, bool allowOrDeny, string permission = "")
         {
             Dictionary<string, HashSet<string>> toadd = allowOrDeny ? AllowPermissions : DenyPermissions;
-            
+
             if (!string.IsNullOrEmpty(control))
             {
                 //make sure control exists
@@ -140,8 +114,8 @@ namespace PermissionGranter.Model
                     toadd.Add(control, new HashSet<string>());
                 }
                 //do not add if empty
-                if(!string.IsNullOrEmpty(permission))
-                toadd[control].Add(permission);
+                if (!string.IsNullOrEmpty(permission))
+                    toadd[control].Add(permission);
                 Changed = true;
             }
             else
@@ -151,11 +125,32 @@ namespace PermissionGranter.Model
         }
 
 
+        /// <summary>
+        /// Combine 2 permissions into 1 object
+        /// </summary>
+        /// <param name="perms1"></param>
+        /// <param name="perms2"></param>
+        /// <returns></returns>
+        public static Dictionary<string, HashSet<string>> CombinePermissions(Dictionary<string, HashSet<string>> perms1, Dictionary<string, HashSet<string>> perms2)
+        {
+            foreach (KeyValuePair<string, HashSet<string>> perms in perms2)
+            {
+                if (!perms1.TryAdd(perms.Key, perms.Value))
+                    perms1[perms.Key].AddRange(perms.Value);
+            }
+            return perms1;
+        }
+
 
         //calculate
         /// <summary>
         /// CalculatePermissions will return a Dictionary of permissions that only contains the 
-        /// unrestricted allow Permissions.
+        /// allow Permissions after subtraction of the DenyPermissions.
+        /// The order of permission is:
+        /// - Group Deny
+        /// - User Deny
+        /// - Group Allow
+        /// - User Allow
         /// </summary>
         /// <param name="usergroup">List of groups a user is added to</param>
         /// <param name="allow">The allow permissions of a user/group</param>
@@ -163,37 +158,22 @@ namespace PermissionGranter.Model
         /// <returns></returns>
         public static Dictionary<string, HashSet<string>> calculatePermissions(List<UserGroup> usergroup, Dictionary<string, HashSet<string>> allow, Dictionary<string, HashSet<string>> deny)
         {
-            Dictionary<string, HashSet<string>> aperms = new Dictionary<string, HashSet<string>>();
-            Dictionary<string, HashSet<string>> dperms = new Dictionary<string, HashSet<string>>();
+            //Allow lists
+            Dictionary<string, HashSet<string>> AllAllowed = new Dictionary<string, HashSet<string>>();
+            Dictionary<string, HashSet<string>> AllDeny = new Dictionary<string, HashSet<string>>();
             foreach (UserGroup ug in usergroup)
             {
-                addPermissions(aperms, ug.OwnedPermissions.AllowPermissions);
-                addPermissions(dperms, ug.OwnedPermissions.DenyPermissions);
+                CombinePermissions(AllAllowed, ug.OwnedPermissions.AllowPermissions);
+                CombinePermissions(AllDeny, ug.OwnedPermissions.DenyPermissions);
             }
-            List<string> lstKeys = new List<string>();
-            addPermissions(aperms, allow);
-            addPermissions(dperms, deny);
-            
+            CombinePermissions(AllAllowed, allow);
+            CombinePermissions(AllDeny, deny);
 
-            List<string> lstKeysToRemove = new List<string>();
-            foreach (KeyValuePair<string, HashSet<string>> kvp in dperms)
-            {
-                HashSet<string> stringvalue;
-                if (aperms.TryGetValue(kvp.Key, out stringvalue))
-                {
-                    stringvalue = deletePermissions(stringvalue, kvp.Key, kvp.Value);
-                }
-                if (stringvalue.Count == 0)
-                    lstKeysToRemove.Add(kvp.Key);
-
-            }
-            //Remove empty lists from dictionary
-            foreach (string s in lstKeysToRemove)
-            {
-                aperms.Remove(s);
-            }
-
-            return aperms;
+            //Remove all allow permissions inside deny
+            AllAllowed.Where(x => AllDeny.ContainsKey(x.Key)).ToList().ForEach(p => AllAllowed[p.Key].Intersect(AllDeny[p.Key]));
+            //Remove empty permissions
+            AllAllowed.ToList().RemoveAll(x => x.Value == null || x.Value.Count == 0);
+            return AllAllowed;
         }
 
         /// <summary>
@@ -214,7 +194,7 @@ namespace PermissionGranter.Model
                 }
             }
             return value;
-            
+
         }
 
         /// <summary>
@@ -247,7 +227,6 @@ namespace PermissionGranter.Model
                     Permissions.addPermissions(basePerm._AllowPermissions, combinePermissions[i]._AllowPermissions);
                     Permissions.addPermissions(basePerm._DenyPermissions, combinePermissions[i]._DenyPermissions);
                 }
-                basePerm.CalculatePermissions();
                 return basePerm;
             }
             else
@@ -274,11 +253,11 @@ namespace PermissionGranter.Model
             {
                 HashSet<string> copyPerms = new HashSet<string>();
                 if (e.Value != null)
-                { 
+                {
                     copyPerms.AddRange(e.Value);
                 }
                 else { copyPerms = null; }
-            p.DenyPermissions.Add(e.Key, copyPerms);
+                p.DenyPermissions.Add(e.Key, copyPerms);
             }
             return p;
         }

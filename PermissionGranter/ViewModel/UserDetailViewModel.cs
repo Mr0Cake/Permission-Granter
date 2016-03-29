@@ -277,25 +277,26 @@ namespace PermissionGranter.ViewModel
                     
                 }
 
-                Task.Factory.StartNew(() =>
-                {
-                foreach (User u in AllUserGroupItems.Where(x => x.OwnedPermissions.Changed).Where(z => z.Email.Contains('@')))
-                    {
-                        User old = _AllItemsBackup.Where(x => x.SavedCopy.Equals(u)).First().SavedCopy as User;
-                        dbActions.ChangesToPermission(old, u);
-                    }
+                //Task.Factory.StartNew(() =>
+                //{
+                //    //foreach (User u in AllUserGroupItems.Where(x => x.OwnedPermissions.Changed).Where(z => z.Email.Contains('@')))
+                //    //    {
+                //    //        User old = _AllItemsBackup.Where(x => x.SavedCopy.Equals(u)).First().SavedCopy as User;
+                //    //        dbActions.ChangesToPermission(old, u);
+                //    //    }
 
-                    foreach(var p in dbActions.NotificationMail)
-                    {
-                        StringBuilder sb = new StringBuilder();
-                        p.Value.ForEach(s => sb.AppendLine(s));
-                        SendMail.Mail(p.Key.Email, sb.ToString());
-                    }
+                //    //    foreach(var p in dbActions.NotificationMail)
+                //    //    {
+                //    //        StringBuilder sb = new StringBuilder();
+                //    //        p.Value.ForEach(s => sb.AppendLine(s));
+                //    //        SendMail.Mail(p.Key.Email, sb.ToString());
+                //    //    }
 
-                    AllItems.ToList().ForEach(x => { x.Changed = false; x.OwnedPermissions.Changed = false; });
-                });
+                //    //    AllItems.ToList().ForEach(x => { x.Changed = false; x.OwnedPermissions.Changed = false; });
+                //    //});
 
-                MessageBox.Show("Database wordt geupdate.", "Opslaan", MessageBoxButton.OK);
+                //    MessageBox.Show("Database wordt geupdate.", "Opslaan", MessageBoxButton.OK);
+                //}
             }
             else
             {

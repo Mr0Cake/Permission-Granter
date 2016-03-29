@@ -51,21 +51,13 @@ namespace PermissionGranter.ViewModel
             tempItems.ClearItems();
             //List<CustTreeItems> items = tempItems.GetAllItemReferences();
             AddItems(u.OwnedPermissions.AllowPermissions, tempItems, true);
-            if(u is User)
-            {
-                foreach(UserGroup ug in (u as User).UserGroupPermissions)
-                {
-                    AddItems(ug.OwnedPermissions.AllowPermissions, tempItems, true);
-                }
-            }
             AddItems(u.OwnedPermissions.DenyPermissions, tempItems, null);
-            if (u is User)
-            {
-                foreach (UserGroup ug in (u as User).UserGroupPermissions)
-                {
-                    AddItems(ug.OwnedPermissions.DenyPermissions, tempItems, true);
-                }
-            }
+        }
+
+
+        public static void FillMenuItems(MenuItems tempItems, Dictionary<string, HashSet<string>> perms)
+        {
+            AddItems(perms,tempItems, true);
         }
 
         public static void FillPermissions(PermissionsBase u, MenuItems tempItems)
@@ -106,7 +98,7 @@ namespace PermissionGranter.ViewModel
                             u.OwnedPermissions.AllowPermissions[cti.Name].Add(p.Name);
 
                         }
-                            
+                        
                         if (p.Value == null)
                         {
                             if (!u.OwnedPermissions.DenyPermissions.ContainsKey(cti.Name))
@@ -116,6 +108,9 @@ namespace PermissionGranter.ViewModel
                         
                             
                     }
+
+                    ////double check if all values are disabled then disable top item
+                    //if()
                 }
                 else
                 {

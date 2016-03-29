@@ -4,7 +4,7 @@
         Title="Login" Height="300" Width="300"
         xmlns:local="clr-namespace:PermissionGranter.View"
         xmlns:viewModel="clr-namespace:PermissionGranter.ViewModel"
-        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=UserSession}">
+        DataContext="{Binding Source={StaticResource MainViewModelLocator}, Path=UserSession}" Closing="Window_Closing">
     <StackPanel Margin="50,10,50,0">
         <TextBlock Text="{Binding ErrorMessage}" TextAlignment="Center" Margin="0,0,0,20" Foreground="Red"></TextBlock>
         <TextBlock Text="Login" TextAlignment="Center" Margin="0,0,0,20"></TextBlock>

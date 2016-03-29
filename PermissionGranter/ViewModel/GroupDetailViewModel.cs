@@ -137,12 +137,18 @@ namespace PermissionGranter.ViewModel
                 }
                 else
                 {
-                    AllUserGroupItems.Where(x => x.Changed || x.ID == -1).ToList().ForEach(p => BLL.GroupBLL.EditUserGroup(p));
+                    //alles correct
+                    AllUserGroupItems.Where(x => x.Changed || x.ID == -1).ToList().ForEach(p =>
+                    {
+                        BLL.GroupBLL.EditUserGroup(p);
+                        dbActions.ChangesToGroupPermission(_AllItemsBackup.Find(backup => backup.SavedCopy.InstanceID.Equals(p.InstanceID)), p);
+
+                    });
                     dbActions.Execute(AllItems.ToList());
                     SavePermissions();
                 }
 
-                MessageBox.Show("Database wordt geupdate.", "Opslaan", MessageBoxButton.OK);
+                MessageBox.Show("Database is opgeslagen.", "Opslaan", MessageBoxButton.OK);
                 
             }
             else

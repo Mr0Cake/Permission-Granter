@@ -84,7 +84,11 @@ namespace PermissionGranter.ViewModel
 
         public void SavePermissions()
         {
-            AllItems.Where(x => x.OwnedPermissions.Changed).ToList().ForEach(p => PermissionsBLL.ReplacePermissions(p));
+            AllItems.Where(x => x.OwnedPermissions.Changed).ToList().ForEach(p =>
+            {
+                PermissionsBLL.ReplacePermissions(p);
+            });
+           
         }
 
         #endregion

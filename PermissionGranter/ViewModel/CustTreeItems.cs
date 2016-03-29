@@ -156,7 +156,28 @@ namespace PermissionGranter.ViewModel
         {
             get 
             {
-                return _HasAccess; 
+                //hasaccess based on all child items
+                if (Options != null && Options.Count > 0)
+                {
+                    if(Options.ToList().All(p => p.Value == null))
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        if(Options.ToList().Find(p => p.Value == true) != null)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                }
+                else {
+                    return _HasAccess;
+                }
             }
             set
             {
@@ -372,6 +393,7 @@ namespace PermissionGranter.ViewModel
             {
                 _Value = value;
                 OnPropertyChanged("Value");
+                if(value == true)
                 ParentItem.changeByChild(value);
             }
         }
